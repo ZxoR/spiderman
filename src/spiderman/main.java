@@ -34,9 +34,9 @@ public class main extends javax.swing.JFrame {
     final JFileChooser fc = new JFileChooser();
     ArrayList<Thread> threads;
     int statsscanned = 0; //how much scanned pages.
-    int alreadyhasit = 0;
     DefaultTableModel agentsmodel;
     long[] tasktime;
+    private boolean threadsSuspended;
 
     public main() {
         initComponents();
@@ -60,18 +60,20 @@ public class main extends javax.swing.JFrame {
         emailsFound = new java.awt.List();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
-        statThreads = new javax.swing.JButton();
+        startThreadsButton = new javax.swing.JButton();
         knownList = new java.awt.List();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        suspendButton = new javax.swing.JButton();
+        unsuspendButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jSlider1 = new javax.swing.JSlider();
-        jButton4 = new javax.swing.JButton();
+        destroyThreadsButton = new javax.swing.JButton();
         statsLable = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         agentsTable = new javax.swing.JTable();
         jButton1 = new javax.swing.JButton();
+        threadSpinner = new javax.swing.JSpinner();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -79,25 +81,31 @@ public class main extends javax.swing.JFrame {
         jTextArea1.setRows(5);
         jScrollPane1.setViewportView(jTextArea1);
 
-        statThreads.setText("Start threads");
-        statThreads.addActionListener(new java.awt.event.ActionListener() {
+        startThreadsButton.setText("Start threads");
+        startThreadsButton.setMaximumSize(new java.awt.Dimension(119, 25));
+        startThreadsButton.setMinimumSize(new java.awt.Dimension(119, 25));
+        startThreadsButton.setPreferredSize(new java.awt.Dimension(119, 25));
+        startThreadsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                statThreadsActionPerformed(evt);
+                startThreadsButtonActionPerformed(evt);
             }
         });
 
-        jButton2.setText("Suspend threads");
-        jButton2.setToolTipText("");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        suspendButton.setText("Suspend");
+        suspendButton.setToolTipText("");
+        suspendButton.setEnabled(false);
+        suspendButton.setPreferredSize(new java.awt.Dimension(119, 25));
+        suspendButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                suspendButtonActionPerformed(evt);
             }
         });
 
-        jButton3.setText("Unsuspend threads");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        unsuspendButton.setText("Resume");
+        unsuspendButton.setEnabled(false);
+        unsuspendButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                unsuspendButtonActionPerformed(evt);
             }
         });
 
@@ -105,12 +113,15 @@ public class main extends javax.swing.JFrame {
 
         jLabel2.setText("Queue:");
 
-        jSlider1.setMaximum(4);
-        jSlider1.setMinimum(1);
-        jSlider1.setValue(3);
+        destroyThreadsButton.setText("Destroy threads");
+        destroyThreadsButton.setEnabled(false);
+        destroyThreadsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                destroyThreadsButtonActionPerformed(evt);
+            }
+        });
 
-        jButton4.setText("Destroy threads");
-
+        statsLable.setForeground(new java.awt.Color(0, 24, 255));
         statsLable.setText("Statistics:");
 
         agentsTable.setModel(new javax.swing.table.DefaultTableModel(
@@ -151,6 +162,12 @@ public class main extends javax.swing.JFrame {
             }
         });
 
+        threadSpinner.setModel(new javax.swing.SpinnerNumberModel(2, 1, 10, 1));
+
+        jLabel3.setText("Threads to run:");
+
+        jLabel4.setText("Agents:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -160,6 +177,24 @@ public class main extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(threadSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(12, 12, 12)
+                                .addComponent(startThreadsButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(suspendButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(unsuspendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(destroyThreadsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 326, Short.MAX_VALUE))
+                    .addComponent(knownList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(statsLable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jScrollPane1)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -170,30 +205,18 @@ public class main extends javax.swing.JFrame {
                                         .addComponent(jButton1))
                                     .addComponent(queueList, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 324, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(statThreads)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 426, Short.MAX_VALUE))
-                    .addComponent(knownList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(statsLable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel4)
+                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 324, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel4))
                 .addGap(5, 5, 5)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
@@ -209,14 +232,14 @@ public class main extends javax.swing.JFrame {
                         .addComponent(queueList, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(statThreads)
-                        .addComponent(jButton2)
-                        .addComponent(jButton3)
-                        .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(suspendButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(threadSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3)
+                    .addComponent(unsuspendButton)
+                    .addComponent(destroyThreadsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(startThreadsButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(knownList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -229,35 +252,49 @@ public class main extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void statThreadsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statThreadsActionPerformed
-        tasktime = new long[jSlider1.getValue()];
+    private void startThreadsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startThreadsButtonActionPerformed
+
+        tasktime = new long[Integer.parseInt(threadSpinner.getValue().toString())];
         agentsmodel.setRowCount(0);
-        for (int i = 0; i < jSlider1.getValue(); i++) {
+        for (int i = 0; i < Integer.parseInt(threadSpinner.getValue().toString()); i++) {
             threads.add(new Thread(new Task(i)));
             agentsmodel.addRow(new Object[]{i, "Created", "---"});
         }
         for (Thread thread : threads) {
             thread.start();
         }
+        threadSpinner.setEnabled(false);
+        suspendButton.setEnabled(true);
+        destroyThreadsButton.setEnabled(true);
+        startThreadsButton.setEnabled(false);
+    }//GEN-LAST:event_startThreadsButtonActionPerformed
 
-    }//GEN-LAST:event_statThreadsActionPerformed
+    private void suspendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_suspendButtonActionPerformed
+        threadsSuspended = true;
+        /*
+         int x = 0;
+         for (Thread thread : threads) {
+         synchronized (thread) {
+         //thread.suspend();
+         agentsmodel.setValueAt("Suspended", x, 1);
+         agentsmodel.setValueAt("---", x, 2);
+         x++;
+         }
+         }*/
+        unsuspendButton.setEnabled(true);
+        suspendButton.setEnabled(false);
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        int x = 0;
-        for (Thread thread : threads) {
-            thread.suspend();
+    }//GEN-LAST:event_suspendButtonActionPerformed
 
-            agentsmodel.setValueAt("Suspended", x, 1);
-            agentsmodel.setValueAt("---", x, 2);
-            x++;
-        }
-    }//GEN-LAST:event_jButton2ActionPerformed
-
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void unsuspendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unsuspendButtonActionPerformed
+        threadsSuspended = false;
         for (Thread thread : threads) {
             thread.resume();
         }
-    }//GEN-LAST:event_jButton3ActionPerformed
+        unsuspendButton.setEnabled(false);
+        suspendButton.setEnabled(true);
+
+    }//GEN-LAST:event_unsuspendButtonActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         int returnVal = fc.showSaveDialog(this);
@@ -266,7 +303,7 @@ public class main extends javax.swing.JFrame {
             try {
                 File file = fc.getSelectedFile();
                 writer = new PrintWriter(file, "UTF-8");
-                for (int i = 0; i <= (emailsFound.getItemCount() -1); i++) {
+                for (int i = 0; i <= (emailsFound.getItemCount() - 1); i++) {
                     writer.println(emailsFound.getItem(i));
                 }
             } catch (FileNotFoundException ex) {
@@ -278,6 +315,20 @@ public class main extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void destroyThreadsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_destroyThreadsButtonActionPerformed
+        for (Thread thread : threads) {
+            thread.stop();
+        }
+        threads.clear();
+        threadSpinner.setEnabled(true);
+        suspendButton.setEnabled(false);
+        destroyThreadsButton.setEnabled(false);
+        startThreadsButton.setEnabled(true);
+        unsuspendButton.setEnabled(false);
+        updateStats();
+        agentsmodel.setRowCount(0);
+    }//GEN-LAST:event_destroyThreadsButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -316,21 +367,23 @@ public class main extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable agentsTable;
+    private javax.swing.JButton destroyThreadsButton;
     private java.awt.List emailsFound;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSlider jSlider1;
     private javax.swing.JTextArea jTextArea1;
     private java.awt.List knownList;
     private java.awt.List queueList;
-    private javax.swing.JButton statThreads;
+    private javax.swing.JButton startThreadsButton;
     private javax.swing.JLabel statsLable;
+    private javax.swing.JButton suspendButton;
+    private javax.swing.JSpinner threadSpinner;
+    private javax.swing.JButton unsuspendButton;
     // End of variables declaration//GEN-END:variables
    public String getHTML(String urlToRead) throws MalformedURLException {
         URL url;
@@ -381,8 +434,6 @@ public class main extends javax.swing.JFrame {
                     if (!isInList(knownList, url)) {
                         queueList.add(url);
                         knownList.add(url);
-                    } else {
-                        alreadyhasit++;
                     }
                 }
             }
@@ -390,6 +441,10 @@ public class main extends javax.swing.JFrame {
     }
 
     public void updateStats() {
+        if (threads.size() == 0) {
+            statsLable.setText("Statistics: ");
+            return;
+        }
         long total = 0;
         for (int x = 0; x < tasktime.length; x++) {
             System.out.println(total + " += " + tasktime[x] + " = " + (total + tasktime[x]));
@@ -397,7 +452,7 @@ public class main extends javax.swing.JFrame {
         }
         total = total / tasktime.length;
         total = (TimeUnit.MINUTES.toNanos(1) / total) * tasktime.length;
-        statsLable.setText("Statistics: Threads running:" + threads.size() + ". Queued: " + queueList.countItems() + ". Emails found: " + emailsFound.countItems() + ". Cached: " + knownList.countItems() + ". Already scanned: " + statsscanned + ". Denied: " + alreadyhasit + "Approximate thread time: " + total + "T/pm");
+        statsLable.setText("Statistics: Agents running: " + threads.size() + ". Queued: " + queueList.countItems() + ". Emails found: " + emailsFound.countItems() + ". Cached: " + knownList.countItems() + ". Already scanned: " + statsscanned + ". Threads Per Minute: " + total + "T/pm.");
     }
 
     public void extractemails(String sourceCode) {
@@ -427,6 +482,16 @@ public class main extends javax.swing.JFrame {
             long ctime;
             agentsmodel.setValueAt("Starting", id, 1);
             while (true) {
+                while (threadsSuspended) {
+                    agentsmodel.setValueAt("Suspended", id, 1);
+                    agentsmodel.setValueAt("---", id, 2);
+                    this.suspend();
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
                 ctime = System.nanoTime();
                 try {
                     agentsmodel.setValueAt("Working", id, 1);
@@ -464,7 +529,6 @@ public class main extends javax.swing.JFrame {
                 } catch (MalformedURLException ex) {
                     System.err.println("thread id: " + id + " exception when trying to proccess everything. ERROR MESSAGE: " + ex.getMessage().toString());
                 }
-                //report my timer per thread
             }
         }
     }
