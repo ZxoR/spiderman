@@ -321,6 +321,7 @@ public class main extends javax.swing.JFrame {
             thread.stop();
         }
         threads.clear();
+        threadsSuspended = false;
         threadSpinner.setEnabled(true);
         suspendButton.setEnabled(false);
         destroyThreadsButton.setEnabled(false);
