@@ -444,7 +444,7 @@ public class main extends javax.swing.JFrame {
             }
         }
     }
-
+       
     class Task extends Thread {
 
         int id;
@@ -504,5 +504,30 @@ public class main extends javax.swing.JFrame {
                 }
             }
         }
+    }
+    
+    // if it returns a positive number it exists in the 
+    
+    public boolean isInSortedList(java.awt.List list, String string)
+    {
+        return !(BinarySearch(list,string)==-1);
+    }
+    
+    public int BinarySearch(java.awt.List list, String key)
+    {
+     int lo = 0;
+        int hi = list.getItemCount() - 1;
+        while (lo <= hi) {
+            // Key is in a[lo..hi] or not present.
+            int mid = lo + (hi - lo) / 2;
+            if (key.compareToIgnoreCase(list.getItem(mid)) < 0) {
+                hi = mid - 1;
+            }
+            else if (key.compareToIgnoreCase(list.getItem(mid)) > 0){
+                lo = mid + 1;
+            }
+            else return mid;
+        }
+        return -1;
     }
 }
