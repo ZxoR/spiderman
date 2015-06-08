@@ -513,12 +513,35 @@ public class main extends javax.swing.JFrame {
         return !(BinarySearch(list,string)==-1);
     }
     
+    //adds to sorted list
+    public void addToList(java.awt.List list, String key)
+    {
+        
+    }
+    
+    //at the start , the queue isn't sorted, it should be sorted alphabetically 
+    //however, since it will contains mostly 4-5 items 
+    //i can sort it with bubble sort 
+    public void Sort_Initiation(java.awt.List list)
+    {
+        //TODO 
+        $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
+                $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
+        $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
+        $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
+        $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
+        $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
+        $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
+        $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
+
+    }
+    
+    //performs a binary swearch
     public int BinarySearch(java.awt.List list, String key)
     {
      int lo = 0;
         int hi = list.getItemCount() - 1;
         while (lo <= hi) {
-            // Key is in a[lo..hi] or not present.
             int mid = lo + (hi - lo) / 2;
             if (key.compareToIgnoreCase(list.getItem(mid)) < 0) {
                 hi = mid - 1;
