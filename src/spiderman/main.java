@@ -525,8 +525,9 @@ public class main extends javax.swing.JFrame {
             list.add(key);
             return;
         }
-        int position;
+        int position=0;
         int lo = 0;
+        boolean hasBroken=false;
         int mid = 0;
         int hi = list.getItemCount() - 1;
         while (lo <= hi) {
@@ -535,17 +536,21 @@ public class main extends javax.swing.JFrame {
                 hi = mid - 1;
             } else if (key.compareToIgnoreCase(list.getItem(mid)) > 0) {
                 lo = mid + 1;
+            } else {
+                position = mid;
+                hasBroken=true;
+                break;
+                
             }
-            else position = mid;
         }
-        position = mid;
+        position = hasBroken ? position : mid;
 
         if (position >= 0) {
             list.add(key, position);
             return;
         }
         position = ~position;
-        list.add(key,position);
+        list.add(key, position);
 
     }
 
