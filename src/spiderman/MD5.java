@@ -4,6 +4,10 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
  
+
+// taken from :
+// http://rosettacode.org/wiki/MD5/Implementation#Java
+
 class MD5
 {
  

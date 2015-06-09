@@ -418,10 +418,11 @@ public class main extends javax.swing.JFrame {
                      queueList.add(url);
                      knownList.add(url);
                      }*/
-
-                    if (!isInSortedList(knownList, url)) {
+                    String MD5_URL = toMD5(url);
+                    if (!isInSortedList(knownList, MD5_URL)) {
                         queueList.add(url);
-                        addToList(knownList, url);
+                        //queueList.add(MD5_URL); // only used to see if working , please dont ever do this
+                        addToList(knownList, MD5_URL);
                     }
                 }
             }
