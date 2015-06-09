@@ -15,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -400,6 +401,7 @@ public class main extends javax.swing.JFrame {
         Pattern p = Pattern.compile("href=\"(.*?)\"");
         Matcher m = p.matcher(sourceCode);
         String url;
+
         while (m.find()) {
             if (!m.group(1).contains("#")) {
                 if ((m.group(1).toString().contains(".html")) || (m.group(1).toString().contains(".php"))) {
@@ -410,9 +412,14 @@ public class main extends javax.swing.JFrame {
                     } else if (!url.startsWith("http://")) {
                         url = "http://" + aURL.getHost() + "/" + url; //problem with HTTPS and ftp:// and ssh:// and smb:// ftps:// ---- PORTS???
                     }
-                    if (!isInList(knownList, url)) {
+                    /*if (!isInList(knownList, url)) {
+                     queueList.add(url);
+                     knownList.add(url);
+                     }*/
+
+                    if (!isInSortedList(knownList, url)) {
                         queueList.add(url);
-                        knownList.add(url);
+                        addToList(knownList, url);
                     }
                 }
             }
@@ -505,4 +512,63 @@ public class main extends javax.swing.JFrame {
             }
         }
     }
+
+    // if it returns a positive number it exists in the 
+    public boolean isInSortedList(java.awt.List list, String string) {
+        return !(BinarySearch(list, string) == -1);
+    }
+
+    //adds to sorted list
+    public void addToList(java.awt.List list, String key) {
+        //first time we add
+        if (list.getItemCount() == 0) {
+            list.add(key);
+            return;
+        }
+        int position=0;
+        int lo = 0;
+        boolean hasBroken=false;
+        int mid = 0;
+        int hi = list.getItemCount() - 1;
+        while (lo <= hi) {
+            mid = lo + (hi - lo) / 2;
+            if (key.compareToIgnoreCase(list.getItem(mid)) < 0) {
+                hi = mid - 1;
+            } else if (key.compareToIgnoreCase(list.getItem(mid)) > 0) {
+                lo = mid + 1;
+            } else {
+                position = mid;
+                hasBroken=true;
+                break;
+                
+            }
+        }
+        position = hasBroken ? position : mid;
+
+        if (position >= 0) {
+            list.add(key, position);
+            return;
+        }
+        position = ~position;
+        list.add(key, position);
+
+    }
+
+    //performs a binary swearch
+    public int BinarySearch(java.awt.List list, String key) {
+        int lo = 0;
+        int hi = list.getItemCount() - 1;
+        while (lo <= hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (key.compareToIgnoreCase(list.getItem(mid)) < 0) {
+                hi = mid - 1;
+            } else if (key.compareToIgnoreCase(list.getItem(mid)) > 0) {
+                lo = mid + 1;
+            } else {
+                return mid;
+            }
+        }
+        return -1;
+    }
+
 }
