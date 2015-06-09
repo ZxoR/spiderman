@@ -1,0 +1,1 @@
+* CRC HASHING ALGORITHM looks pretty promising , however it starts having collisions after ~200,000 entries
