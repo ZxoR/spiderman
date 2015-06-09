@@ -410,9 +410,15 @@ public class main extends javax.swing.JFrame {
                     } else if (!url.startsWith("http://")) {
                         url = "http://" + aURL.getHost() + "/" + url; //problem with HTTPS and ftp:// and ssh:// and smb:// ftps:// ---- PORTS???
                     }
-                    if (!isInList(knownList, url)) {
+                    /*if (!isInList(knownList, url)) {
                         queueList.add(url);
                         knownList.add(url);
+                    }*/
+                    
+                    if (!isInSortedList(knownList,url))
+                    {
+                        queueList.add(url);
+                        addToList(knownList,url);
                     }
                 }
             }
@@ -516,25 +522,37 @@ public class main extends javax.swing.JFrame {
     //adds to sorted list
     public void addToList(java.awt.List list, String key)
     {
+        //first time we add
+        if (list.getItemCount() == 0)
+        {
+            list.add(key);
+            return;
+        }
         
+       int lo = 0;
+        int hi = list.getItemCount() - 1;
+        while (lo <= hi) {
+            int mid = lo + (hi - lo) / 2;
+            
+            //thats the position
+            if (list.getItem(mid).compareToIgnoreCase(key) <= 0  &&
+                    list.getItem(mid+1).compareToIgnoreCase(key) >= 0 )
+            {
+                list.add(key, mid);
+                return;
+            }
+            else if (key.compareToIgnoreCase(list.getItem(mid)) < 0) {
+                hi = mid - 1;
+            }
+            else if (key.compareToIgnoreCase(list.getItem(mid)) > 0){
+                lo = mid + 1;
+            }
+            //else return mid;
+        }
+        
+     
     }
     
-    //at the start , the queue isn't sorted, it should be sorted alphabetically 
-    //however, since it will contains mostly 4-5 items 
-    //i can sort it with bubble sort 
-    public void Sort_Initiation(java.awt.List list)
-    {
-        //TODO 
-        $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
-                $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
-        $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
-        $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
-        $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
-        $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
-        $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
-        $#@$@#$#@%^$^$#@^%$&^^^%$#!@#$%^*$#
-
-    }
     
     //performs a binary swearch
     public int BinarySearch(java.awt.List list, String key)
