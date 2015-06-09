@@ -41,7 +41,7 @@ public class main extends javax.swing.JFrame {
         initComponents();
         threads = new ArrayList<Thread>();
         queueList.add("http://www.hometheater.co.il");
-        queueList.add("http://www.hometheater.co.il");
+        queueList.add("http://www.hometheater.co.il"); //its duplicated.. for testing. not production!
         queueList.add("http://stackoverflow.com/questions/7042762/easier-way-to-synchronize-2-threads-in-java");
         agentsmodel = (DefaultTableModel) agentsTable.getModel();
     }
