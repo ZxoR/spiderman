@@ -5,6 +5,7 @@
  */
 package spiderman;
 
+import java.security.MessageDigest;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,8 +15,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Collections;
+//import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -416,10 +418,11 @@ public class main extends javax.swing.JFrame {
                      queueList.add(url);
                      knownList.add(url);
                      }*/
-
-                    if (!isInSortedList(knownList, url)) {
+                    String MD5_URL = toMD5(url);
+                    if (!isInSortedList(knownList, MD5_URL)) {
                         queueList.add(url);
-                        addToList(knownList, url);
+                        //queueList.add(MD5_URL); // only used to see if working , please dont ever do this
+                        addToList(knownList, MD5_URL);
                     }
                 }
             }
@@ -515,7 +518,7 @@ public class main extends javax.swing.JFrame {
 
     // if it returns a positive number it exists in the 
     public boolean isInSortedList(java.awt.List list, String string) {
-        return !(BinarySearch(list, string) == -1);
+        return !(BinarySearch(list, string) < 0);
     }
 
     //adds to sorted list
@@ -569,6 +572,11 @@ public class main extends javax.swing.JFrame {
             }
         }
         return -1;
+    }
+    
+    public String toMD5 (String message)
+    {
+      return  (MD5.toHexString(MD5.computeMD5(message.getBytes())));
     }
 
 }
