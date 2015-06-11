@@ -5,6 +5,8 @@
  */
 package spiderman;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.security.MessageDigest;
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,7 +36,7 @@ import javax.swing.table.DefaultTableModel;
  * @author ZxoR (Yonatan)
  */
 public class main extends javax.swing.JFrame {
-
+    
     final Object lock = new Object();
     final JFileChooser fc = new JFileChooser();
     final ArrayList<Thread> threads;
@@ -43,11 +45,26 @@ public class main extends javax.swing.JFrame {
     long[] tasktime;
     private boolean threadsSuspended;
     final static DefaultTableModel regexs = new DefaultTableModel(0, 3);
-
+    
     public main() {
+        
         initComponents();
+        this.setVisible(false);
+        loadingDialog loading = new loadingDialog(this, true);
+        loading.setVisible(true);
+        loading.addWindowListener(new WindowAdapter() {
+            public void windowClosed(WindowEvent e) {
+                System.out.println("Window closed");
+                try {
+                    main.super.setVisible(true);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
+            }
+        });
+        
         threads = new ArrayList<Thread>();
-        regexs.addRow(new Object[]{"Emails regex","([a-zA-Z0-9.]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,5})))",true});
+        regexs.addRow(new Object[]{"Emails regex", "([a-zA-Z0-9.]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,5})))", true});
         queueList.add("http://www.hometheater.co.il");
         queueList.add("http://www.israelweather.co.il/forecast/index.html"); //its duplicated.. for testing. not production!
         queueList.add("http://stackoverflow.com/questions/7042762/easier-way-to-synchronize-2-threads-in-java");
@@ -80,6 +97,7 @@ public class main extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         regexListButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SPIDERman - If you can't beat them - Sell them weapons. [BINARY]");
@@ -180,6 +198,13 @@ public class main extends javax.swing.JFrame {
             }
         });
 
+        jButton1.setText("spiderman Settings");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -219,7 +244,10 @@ public class main extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel4)
-                                    .addComponent(regexListButton, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(regexListButton, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jButton1)))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
@@ -251,7 +279,8 @@ public class main extends javax.swing.JFrame {
                         .addComponent(startThreadsButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(destroyThreadsButton)
-                            .addComponent(regexListButton)))
+                            .addComponent(regexListButton)
+                            .addComponent(jButton1)))
                     .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -277,7 +306,7 @@ public class main extends javax.swing.JFrame {
         for (Thread thread : threads) {
             thread.start();
         }
-
+        
         threadSpinner.setEnabled(false);
         suspendButton.setEnabled(true);
         destroyThreadsButton.setEnabled(true);
@@ -340,6 +369,12 @@ public class main extends javax.swing.JFrame {
         diag.setVisible(true);
     }//GEN-LAST:event_regexListButtonActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        spiderSettings diag = new spiderSettings(this, true);
+        diag.setLocationRelativeTo(this);
+        diag.setVisible(true);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -379,6 +414,7 @@ public class main extends javax.swing.JFrame {
     private javax.swing.JTable agentsTable;
     private javax.swing.JButton destroyThreadsButton;
     private java.awt.List emailsFound;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -395,14 +431,14 @@ public class main extends javax.swing.JFrame {
     private javax.swing.JButton unsuspendButton;
     // End of variables declaration//GEN-END:variables
    public String getHTML(String urlToRead) throws MalformedURLException {
-
+        
         URL url;
         final HttpURLConnection conn;
         final BufferedReader rd;
         String line;
         String result = "";
         url = new URL(urlToRead);
-
+        
         try {
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -433,7 +469,7 @@ public class main extends javax.swing.JFrame {
         }
         return result;
     }
-
+    
     public boolean isInList(java.awt.List list, String string) {
         for (int x = 0; x < list.getItemCount(); x++) {
             if (list.getItem(x).equals(string)) {
@@ -442,12 +478,12 @@ public class main extends javax.swing.JFrame {
         }
         return false;
     }
-
+    
     public void extracturls(String sourceCode, String originalurl) throws MalformedURLException {
         Pattern p = Pattern.compile("href=\"(.*?)\"");
         Matcher m = p.matcher(sourceCode);
         String url;
-
+        
         while (m.find()) {
             if (!m.group(1).contains("#")) {
                 if ((m.group(1).toString().contains(".html")) || (m.group(1).toString().contains(".php"))) {
@@ -472,7 +508,7 @@ public class main extends javax.swing.JFrame {
             }
         }
     }
-
+    
     public void updateStats() {
         if (threads.isEmpty()) {
             statsLable.setText("Statistics: ");
@@ -486,7 +522,7 @@ public class main extends javax.swing.JFrame {
         total = (TimeUnit.MINUTES.toNanos(1) / total) * tasktime.length;
         statsLable.setText("Statistics: Agents running: " + threads.size() + ". Queued: " + queueList.countItems() + ". Emails found: " + emailsFound.countItems() + ". Cached: " + knownList.countItems() + ". Already scanned: " + statsscanned + ". Threads Per Minute: " + total + "T/pm.");
     }
-
+    
     public void extractemails(String sourceCode) {
         Pattern p = Pattern.compile("([a-zA-Z0-9.]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,5})))");
         Matcher m = p.matcher(sourceCode);
@@ -498,15 +534,15 @@ public class main extends javax.swing.JFrame {
             }
         }
     }
-
+    
     class Task extends Thread {
-
+        
         int id;
-
+        
         public Task(int i) {
             this.id = i;
         }
-
+        
         @Override
         public void run() {
             String url;
@@ -558,16 +594,16 @@ public class main extends javax.swing.JFrame {
                                 System.out.println("Socket crash has been handled and recreated!!!");
                             }
                         }
-
+                        
                     }, 25 * 1000); //25 seconds per thread run.
                     source = getHTML(url);
-
+                    
                     try {
                         extracturls(source, url);
                     } catch (MalformedURLException ex) {
                         Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
                     }
-
+                    
                     extractemails(source);
                     statsscanned++;
                     tasktime[id] = (System.nanoTime()
@@ -575,11 +611,11 @@ public class main extends javax.swing.JFrame {
                     agentsmodel.setValueAt(
                             (TimeUnit.MINUTES.toNanos(1) / tasktime[id]) + "T/pm", id, 2);
                     updateStats();
-
+                    
                     timer.cancel();
-
+                    
                     timer.purge();
-
+                    
                     try {
                         agentsmodel.setValueAt("Sleeping", id, 1);
                         Thread.sleep(500);
@@ -589,7 +625,7 @@ public class main extends javax.swing.JFrame {
                 } catch (MalformedURLException ex) {
                     System.err.println("thread id: " + id + " exception when trying to proccess everything. ERROR MESSAGE: " + ex.getMessage().toString());
                 }
-
+                
             }
         }
     }
@@ -621,18 +657,18 @@ public class main extends javax.swing.JFrame {
                 position = mid;
                 hasBroken = true;
                 break;
-
+                
             }
         }
         position = hasBroken ? position : mid;
-
+        
         if (position >= 0) {
             list.add(key, position);
             return;
         }
         position = ~position;
         list.add(key, position);
-
+        
     }
 
     //performs a binary swearch
@@ -651,9 +687,9 @@ public class main extends javax.swing.JFrame {
         }
         return -1;
     }
-
+    
     public String toMD5(String message) {
         return (MD5.toHexString(MD5.computeMD5(message.toLowerCase().getBytes())));
     }
-
+    
 }
