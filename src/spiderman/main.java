@@ -38,21 +38,20 @@ public class main extends javax.swing.JFrame {
     final Object lock = new Object();
     final JFileChooser fc = new JFileChooser();
     final ArrayList<Thread> threads;
-    ArrayList<String> searchRegexes;
     int statsscanned = 0; //how much scanned pages.
     DefaultTableModel agentsmodel;
     long[] tasktime;
     private boolean threadsSuspended;
+    final static DefaultTableModel regexs = new DefaultTableModel(0, 3);
 
     public main() {
         initComponents();
         threads = new ArrayList<Thread>();
-        searchRegexes = new ArrayList<String>();
+        regexs.addRow(new Object[]{"Emails regex","([a-zA-Z0-9.]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,5})))",true});
         queueList.add("http://www.hometheater.co.il");
         queueList.add("http://www.israelweather.co.il/forecast/index.html"); //its duplicated.. for testing. not production!
         queueList.add("http://stackoverflow.com/questions/7042762/easier-way-to-synchronize-2-threads-in-java");
         agentsmodel = (DefaultTableModel) agentsTable.getModel();
-        searchRegexes.add("([a-zA-Z0-9.]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,5})))");
     }
 
     /**
@@ -549,27 +548,17 @@ public class main extends javax.swing.JFrame {
                         @Override
                         public void run() {
                             synchronized (threads) {
-                             //threads.get(id).interrupt();
-                             threads.set(id, null); //nullify thread
-                             threads.set(id, new Thread(new Task(id))); //recreate
-                             try {
-                             Thread.sleep(5000); //give me 5 seconds before recreat.. 
-                             } catch (InterruptedException ex) {
-                             Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
-                             }
-                             threads.get(id).start(); //then run it again
-                             System.out.println("Socket crash has been handled and recreated!!!");
-                             }
-//                            threads.get(id).interrupt();
-//                            threads.get(id).stop();
-//                            try {
-//                                Thread.sleep(3000); //3 secs to return to life
-//                            } catch (InterruptedException ex) {
-//                                Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
-//                            }
-//                            threads.get(id).start();
-//                            System.out.println("Socket crash has been handled and recreated!!!");
-
+                                //threads.get(id).interrupt();
+                                threads.set(id, null); //nullify thread
+                                threads.set(id, new Thread(new Task(id))); //recreate
+                                try {
+                                    Thread.sleep(5000); //give me 5 seconds before recreat.. 
+                                } catch (InterruptedException ex) {
+                                    Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                                threads.get(id).start(); //then run it again
+                                System.out.println("Socket crash has been handled and recreated!!!");
+                            }
                         }
 
                     }, 25 * 1000); //25 seconds per thread run.
