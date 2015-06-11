@@ -37,7 +37,8 @@ public class main extends javax.swing.JFrame {
 
     final Object lock = new Object();
     final JFileChooser fc = new JFileChooser();
-    ArrayList<Thread> threads;
+    final ArrayList<Thread> threads;
+    ArrayList<String> searchRegexes;
     int statsscanned = 0; //how much scanned pages.
     DefaultTableModel agentsmodel;
     long[] tasktime;
@@ -46,10 +47,12 @@ public class main extends javax.swing.JFrame {
     public main() {
         initComponents();
         threads = new ArrayList<Thread>();
+        searchRegexes = new ArrayList<String>();
         queueList.add("http://www.hometheater.co.il");
         queueList.add("http://www.israelweather.co.il/forecast/index.html"); //its duplicated.. for testing. not production!
         queueList.add("http://stackoverflow.com/questions/7042762/easier-way-to-synchronize-2-threads-in-java");
         agentsmodel = (DefaultTableModel) agentsTable.getModel();
+        searchRegexes.add("([a-zA-Z0-9.]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,5})))");
     }
 
     /**
@@ -77,6 +80,7 @@ public class main extends javax.swing.JFrame {
         threadSpinner = new javax.swing.JSpinner();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
+        regexListButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SPIDERman - If you can't beat them - Sell them weapons. [BINARY]");
@@ -170,6 +174,13 @@ public class main extends javax.swing.JFrame {
 
         jLabel4.setText("Agents:");
 
+        regexListButton.setText("Regex list");
+        regexListButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                regexListButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -204,10 +215,16 @@ public class main extends javax.swing.JFrame {
                                 .addComponent(queueList, javax.swing.GroupLayout.PREFERRED_SIZE, 673, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel4)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE))))
-                .addGap(12, 12, 12))
-            .addComponent(statsLable, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel4)
+                                    .addComponent(regexListButton, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(0, 0, Short.MAX_VALUE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(93, 93, 93)
+                        .addComponent(statsLable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -219,7 +236,7 @@ public class main extends javax.swing.JFrame {
                 .addGap(5, 5, 5)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(emailsFound, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(emailsFound, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2)
@@ -235,15 +252,18 @@ public class main extends javax.swing.JFrame {
                         .addComponent(threadSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(unsuspendButton, javax.swing.GroupLayout.Alignment.TRAILING)
                         .addComponent(startThreadsButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(destroyThreadsButton))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(destroyThreadsButton)
+                            .addComponent(regexListButton)))
                     .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(knownList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(27, 27, 27))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(443, Short.MAX_VALUE)
-                .addComponent(statsLable)
-                .addContainerGap())
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(knownList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(27, 27, 27))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(statsLable)
+                        .addContainerGap())))
         );
 
         pack();
@@ -317,6 +337,12 @@ public class main extends javax.swing.JFrame {
         agentsmodel.setRowCount(0);
     }//GEN-LAST:event_destroyThreadsButtonActionPerformed
 
+    private void regexListButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_regexListButtonActionPerformed
+        regexSettings diag = new regexSettings(this, true);
+        diag.setLocationRelativeTo(this);
+        diag.setVisible(true);
+    }//GEN-LAST:event_regexListButtonActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -363,6 +389,7 @@ public class main extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private java.awt.List knownList;
     private java.awt.List queueList;
+    private javax.swing.JButton regexListButton;
     private javax.swing.JButton saveEmailsButton;
     private javax.swing.JButton startThreadsButton;
     private javax.swing.JLabel statsLable;
@@ -521,31 +548,51 @@ public class main extends javax.swing.JFrame {
                     timer.schedule(new TimerTask() {
                         @Override
                         public void run() {
-                            threads.get(id).interrupt();
-                            threads.set(id, null); //nullify thread
-                            threads.add(new Thread(new Task(id))); //recreate
-                            try {
-                                Thread.sleep(5000); //give me 5 seconds before recreat.. 
-                            } catch (InterruptedException ex) {
-                                Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                            threads.get(id).run(); //then run it again
-                            System.out.println("Socket crash has been handled and recreated!!!");
+                            synchronized (threads) {
+                             //threads.get(id).interrupt();
+                             threads.set(id, null); //nullify thread
+                             threads.set(id, new Thread(new Task(id))); //recreate
+                             try {
+                             Thread.sleep(5000); //give me 5 seconds before recreat.. 
+                             } catch (InterruptedException ex) {
+                             Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
+                             }
+                             threads.get(id).start(); //then run it again
+                             System.out.println("Socket crash has been handled and recreated!!!");
+                             }
+//                            threads.get(id).interrupt();
+//                            threads.get(id).stop();
+//                            try {
+//                                Thread.sleep(3000); //3 secs to return to life
+//                            } catch (InterruptedException ex) {
+//                                Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
+//                            }
+//                            threads.get(id).start();
+//                            System.out.println("Socket crash has been handled and recreated!!!");
+
                         }
+
                     }, 25 * 1000); //25 seconds per thread run.
                     source = getHTML(url);
+
                     try {
                         extracturls(source, url);
                     } catch (MalformedURLException ex) {
                         Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
                     }
+
                     extractemails(source);
                     statsscanned++;
-                    tasktime[id] = (System.nanoTime() - ctime);
-                    agentsmodel.setValueAt((TimeUnit.MINUTES.toNanos(1) / tasktime[id]) + "T/pm", id, 2);
+                    tasktime[id] = (System.nanoTime()
+                            - ctime);
+                    agentsmodel.setValueAt(
+                            (TimeUnit.MINUTES.toNanos(1) / tasktime[id]) + "T/pm", id, 2);
                     updateStats();
+
                     timer.cancel();
+
                     timer.purge();
+
                     try {
                         agentsmodel.setValueAt("Sleeping", id, 1);
                         Thread.sleep(500);
@@ -560,7 +607,7 @@ public class main extends javax.swing.JFrame {
         }
     }
 
-    // if it returns a positive number it exists in the 
+// if it returns a positive number it exists in the 
     public boolean isInSortedList(java.awt.List list, String string) {
         return !(BinarySearch(list, string) < 0);
     }
