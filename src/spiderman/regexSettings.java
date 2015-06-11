@@ -5,6 +5,9 @@
  */
 package spiderman;
 
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -16,12 +19,19 @@ public class regexSettings extends javax.swing.JDialog {
     /**
      * Creates new form regexSettings
      */
+    DefaultTableModel regexListModel;
+
     public regexSettings(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
+
         initComponents();
-        //DefaultTableModel model = (DefaultTableModel) regexList.getModel();
-        //model.addRow(new Object[]{"Emails regex", "([a-zA-Z0-9.]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,5})))", true});
-        //fetch regexs from main.regexs
+        regexListModel = (DefaultTableModel) regexList.getModel();
+        for (int x = 0; x < main.regexs.getRowCount(); x++) {
+            String desc = main.regexs.getValueAt(x, 0).toString();
+            String regex = main.regexs.getValueAt(x, 1).toString();
+            Boolean enabled = Boolean.parseBoolean(main.regexs.getValueAt(x, 2).toString());
+            regexListModel.addRow(new Object[]{desc, regex, enabled});
+        }
     }
 
     /**
@@ -35,10 +45,12 @@ public class regexSettings extends javax.swing.JDialog {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         regexList = new javax.swing.JTable();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        insertButton = new javax.swing.JButton();
+        deleteButton = new javax.swing.JButton();
+        applyButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Regex settings dialog");
 
         regexList.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -58,10 +70,35 @@ public class regexSettings extends javax.swing.JDialog {
         });
         regexList.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(regexList);
+        if (regexList.getColumnModel().getColumnCount() > 0) {
+            regexList.getColumnModel().getColumn(0).setMinWidth(50);
+            regexList.getColumnModel().getColumn(0).setPreferredWidth(200);
+            regexList.getColumnModel().getColumn(0).setMaxWidth(400);
+            regexList.getColumnModel().getColumn(2).setMinWidth(100);
+            regexList.getColumnModel().getColumn(2).setPreferredWidth(100);
+            regexList.getColumnModel().getColumn(2).setMaxWidth(100);
+        }
 
-        jButton1.setText("Insert");
+        insertButton.setText("Insert");
+        insertButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                insertButtonActionPerformed(evt);
+            }
+        });
 
-        jButton2.setText("Delete");
+        deleteButton.setText("Delete");
+        deleteButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteButtonActionPerformed(evt);
+            }
+        });
+
+        applyButton.setText("Apply changes");
+        applyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                applyButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -73,9 +110,11 @@ public class regexSettings extends javax.swing.JDialog {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 976, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton2)
+                        .addComponent(deleteButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1)))
+                        .addComponent(insertButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(applyButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -85,13 +124,44 @@ public class regexSettings extends javax.swing.JDialog {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
+                    .addComponent(insertButton)
+                    .addComponent(deleteButton)
+                    .addComponent(applyButton))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
+        if (regexList.getSelectedRow() >= 0) {
+            regexListModel.removeRow(regexList.getSelectedRow());
+        }
+    }//GEN-LAST:event_deleteButtonActionPerformed
+
+    private void insertButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertButtonActionPerformed
+        regexListModel.addRow(new Object[]{"My custom regex", "(My first regex)", false});
+    }//GEN-LAST:event_insertButtonActionPerformed
+
+    private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
+        for (int x = 0; x < regexList.getRowCount(); x++) {
+            String theregex = regexList.getValueAt(x, 1).toString();
+            Boolean enabled = Boolean.parseBoolean(regexList.getValueAt(x, 2).toString());
+            if ((!checkIfRegexIsVaild(theregex)) && (enabled)) {
+                String desc = regexList.getValueAt(x, 0).toString();
+                regexListModel.setValueAt(false, x, 2);
+                JOptionPane.showMessageDialog(null, "The regex \"" + desc + "\" is not vaild and therefore disabled", "Regex is not vaild", JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+        main.regexs.setRowCount(0); //removes the old
+        for (int x = 0; x < regexList.getRowCount(); x++) {
+            String desc = regexList.getValueAt(x, 0).toString();
+            String regex = regexList.getValueAt(x, 1).toString();
+            Boolean enabled = Boolean.parseBoolean(regexList.getValueAt(x, 2).toString());
+            main.regexs.addRow(new Object[]{desc, regex, enabled});
+        }
+        this.setVisible(false);
+    }//GEN-LAST:event_applyButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -136,9 +206,19 @@ public class regexSettings extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JButton applyButton;
+    private javax.swing.JButton deleteButton;
+    private javax.swing.JButton insertButton;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable regexList;
     // End of variables declaration//GEN-END:variables
+
+    public Boolean checkIfRegexIsVaild(String pattern) {
+        try {
+            Pattern.compile(pattern);
+        } catch (PatternSyntaxException exception) {
+            return false;
+        }
+        return true;
+    }
 }
