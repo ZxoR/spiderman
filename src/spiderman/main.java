@@ -9,6 +9,7 @@ import java.security.MessageDigest;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -17,6 +18,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 //import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -44,7 +47,7 @@ public class main extends javax.swing.JFrame {
         initComponents();
         threads = new ArrayList<Thread>();
         queueList.add("http://www.hometheater.co.il");
-        queueList.add("http://www.hometheater.co.il"); //its duplicated.. for testing. not production!
+        queueList.add("http://www.israelweather.co.il/forecast/index.html"); //its duplicated.. for testing. not production!
         queueList.add("http://stackoverflow.com/questions/7042762/easier-way-to-synchronize-2-threads-in-java");
         agentsmodel = (DefaultTableModel) agentsTable.getModel();
     }
@@ -222,7 +225,7 @@ public class main extends javax.swing.JFrame {
                             .addComponent(jLabel2)
                             .addComponent(saveEmailsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(queueList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(queueList, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(4, 4, 4))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -248,7 +251,6 @@ public class main extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void startThreadsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startThreadsButtonActionPerformed
-
         tasktime = new long[Integer.parseInt(threadSpinner.getValue().toString())];
         agentsmodel.setRowCount(0);
         for (int i = 0; i < Integer.parseInt(threadSpinner.getValue().toString()); i++) {
@@ -258,6 +260,7 @@ public class main extends javax.swing.JFrame {
         for (Thread thread : threads) {
             thread.start();
         }
+
         threadSpinner.setEnabled(false);
         suspendButton.setEnabled(true);
         destroyThreadsButton.setEnabled(true);
@@ -368,19 +371,36 @@ public class main extends javax.swing.JFrame {
     private javax.swing.JButton unsuspendButton;
     // End of variables declaration//GEN-END:variables
    public String getHTML(String urlToRead) throws MalformedURLException {
+
         URL url;
-        HttpURLConnection conn;
-        BufferedReader rd;
+        final HttpURLConnection conn;
+        final BufferedReader rd;
         String line;
         String result = "";
         url = new URL(urlToRead);
+
         try {
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    try {
+                        rd.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    conn.disconnect();
+                    System.out.println("Timeout has been handled.");
+                }
+            }, 5 * 1000); //5 seconds time out
             while ((line = rd.readLine()) != null) {
                 result += line;
             }
+            timer.cancel();
+            timer.purge();
             rd.close();
             conn.disconnect();
             System.gc();
@@ -469,6 +489,11 @@ public class main extends javax.swing.JFrame {
             String source;
             long ctime;
             agentsmodel.setValueAt("Starting", id, 1);
+            try {
+                Thread.sleep(id * 1000); //1 seconds revah
+            } catch (InterruptedException ex) {
+                Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
+            }
             while (true) {
                 while (threadsSuspended) {
                     agentsmodel.setValueAt("Suspended", id, 1);
@@ -492,6 +517,22 @@ public class main extends javax.swing.JFrame {
                             url = "http://www.hometheater.co.il";
                         }
                     }
+                    Timer timer = new Timer();
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            threads.get(id).interrupt();
+                            threads.set(id, null); //nullify thread
+                            threads.add(new Thread(new Task(id))); //recreate
+                            try {
+                                Thread.sleep(5000); //give me 5 seconds before recreat.. 
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            threads.get(id).run(); //then run it again
+                            System.out.println("Socket crash has been handled and recreated!!!");
+                        }
+                    }, 25 * 1000); //25 seconds per thread run.
                     source = getHTML(url);
                     try {
                         extracturls(source, url);
@@ -503,15 +544,18 @@ public class main extends javax.swing.JFrame {
                     tasktime[id] = (System.nanoTime() - ctime);
                     agentsmodel.setValueAt((TimeUnit.MINUTES.toNanos(1) / tasktime[id]) + "T/pm", id, 2);
                     updateStats();
+                    timer.cancel();
+                    timer.purge();
                     try {
                         agentsmodel.setValueAt("Sleeping", id, 1);
-                        Thread.sleep(1000);
+                        Thread.sleep(500);
                     } catch (InterruptedException ex) {
                         System.err.println("thread id: " + id + " exception when trying to proccess " + url + ". ERROR MESSAGE: " + ex.getMessage().toString());
                     }
                 } catch (MalformedURLException ex) {
                     System.err.println("thread id: " + id + " exception when trying to proccess everything. ERROR MESSAGE: " + ex.getMessage().toString());
                 }
+
             }
         }
     }
@@ -528,9 +572,9 @@ public class main extends javax.swing.JFrame {
             list.add(key);
             return;
         }
-        int position=0;
+        int position = 0;
         int lo = 0;
-        boolean hasBroken=false;
+        boolean hasBroken = false;
         int mid = 0;
         int hi = list.getItemCount() - 1;
         while (lo <= hi) {
@@ -541,9 +585,9 @@ public class main extends javax.swing.JFrame {
                 lo = mid + 1;
             } else {
                 position = mid;
-                hasBroken=true;
+                hasBroken = true;
                 break;
-                
+
             }
         }
         position = hasBroken ? position : mid;
@@ -573,10 +617,9 @@ public class main extends javax.swing.JFrame {
         }
         return -1;
     }
-    
-    public String toMD5 (String message)
-    {
-      return  (MD5.toHexString(MD5.computeMD5(message.getBytes())));
+
+    public String toMD5(String message) {
+        return (MD5.toHexString(MD5.computeMD5(message.toLowerCase().getBytes())));
     }
 
 }

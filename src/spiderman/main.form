@@ -87,7 +87,7 @@
                           <Component id="saveEmailsButton" alignment="3" min="-2" pref="25" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="queueList" min="-2" max="-2" attributes="0"/>
+                      <Component id="queueList" min="-2" pref="174" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                   </Group>
                   <Component id="jScrollPane2" pref="0" max="32767" attributes="0"/>
