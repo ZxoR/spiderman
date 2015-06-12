@@ -6,6 +6,7 @@
 package spiderman;
 
 import static java.lang.Thread.sleep;
+import java.sql.SQLException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -26,11 +27,15 @@ public class loadingDialog extends javax.swing.JDialog {
         Thread thread = new Thread() {
             public void run() {
                 try {
+                    //main maindiag = new main();
                     sleep(500);
-                    infoLabel.setText("Loading UI...");
                     pBar.setValue(pBar.getValue() + 1);
-                    sleep(1000);
                     infoLabel.setText("Loading databse...");
+                    try {
+                        spiderman.main.loadSettings();
+                    } catch (SQLException ex) {
+                        Logger.getLogger(loadingDialog.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     pBar.setValue(pBar.getValue() + 1);
                     sleep(1500);
                     infoLabel.setText("Finalizing...");
@@ -60,6 +65,7 @@ public class loadingDialog extends javax.swing.JDialog {
         infoLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setAlwaysOnTop(true);
         setResizable(false);
         setType(java.awt.Window.Type.POPUP);
 
@@ -96,9 +102,9 @@ public class loadingDialog extends javax.swing.JDialog {
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
-                .addGap(18, 18, 18)
-                .addComponent(pBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(pBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(infoLabel)
                 .addContainerGap())
         );

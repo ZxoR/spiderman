@@ -17,6 +17,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -63,9 +64,7 @@ public class main extends javax.swing.JFrame {
                 }
             }
         });
-
         threads = new ArrayList<Thread>();
-        regexs.addRow(new Object[]{"Emails regex", "([a-zA-Z0-9.]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,5})))", true});
         queueList.add("http://www.hometheater.co.il");
         queueList.add("http://www.israelweather.co.il/forecast/index.html"); //its duplicated.. for testing. not production!
         queueList.add("http://stackoverflow.com/questions/7042762/easier-way-to-synchronize-2-threads-in-java");
@@ -99,6 +98,8 @@ public class main extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         regexListButton = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
+        cleanEmailsList = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SPIDERman - If you can't beat them - Sell them weapons. [BINARY]");
@@ -206,6 +207,20 @@ public class main extends javax.swing.JFrame {
             }
         });
 
+        cleanEmailsList.setText("Clear emails");
+        cleanEmailsList.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cleanEmailsListActionPerformed(evt);
+            }
+        });
+
+        jButton2.setText("jButton2");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -234,9 +249,13 @@ public class main extends javax.swing.JFrame {
                                 .addComponent(destroyThreadsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(emailsFound, javax.swing.GroupLayout.PREFERRED_SIZE, 673, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(layout.createSequentialGroup()
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                     .addComponent(jLabel2)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jButton2)
+                                    .addGap(66, 66, 66)
+                                    .addComponent(cleanEmailsList)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                     .addComponent(saveEmailsButton))
                                 .addComponent(queueList, javax.swing.GroupLayout.PREFERRED_SIZE, 673, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(18, 18, 18)
@@ -266,7 +285,9 @@ public class main extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2)
-                            .addComponent(saveEmailsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(saveEmailsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(cleanEmailsList)
+                            .addComponent(jButton2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(queueList, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(4, 4, 4))
@@ -376,6 +397,18 @@ public class main extends javax.swing.JFrame {
         diag.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void cleanEmailsListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cleanEmailsListActionPerformed
+        emailsFound.removeAll();
+    }//GEN-LAST:event_cleanEmailsListActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        try {
+            saveSettings();
+        } catch (SQLException ex) {
+            Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -413,9 +446,11 @@ public class main extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable agentsTable;
+    private javax.swing.JButton cleanEmailsList;
     private javax.swing.JButton destroyThreadsButton;
     private java.awt.List emailsFound;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -596,7 +631,7 @@ public class main extends javax.swing.JFrame {
                             }
                         }
 
-                    }, main.threadTimeoutLimit); 
+                    }, main.threadTimeoutLimit);
                     source = getHTML(url);
 
                     try {
@@ -693,4 +728,83 @@ public class main extends javax.swing.JFrame {
         return (MD5.toHexString(MD5.computeMD5(message.toLowerCase().getBytes())));
     }
 
+    public static void loadSettings() throws SQLException {
+        Connection c = null;
+        Statement stmt = null;
+        try {
+            Class.forName("org.sqlite.JDBC");
+            c = DriverManager.getConnection("jdbc:sqlite:test.db");
+        } catch (ClassNotFoundException | SQLException e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            System.exit(0);
+        }
+        String sql = "CREATE TABLE IF NOT EXISTS \"settings\" ( \"variable\" TEXT, \"value\" TEXT ); CREATE TABLE IF NOT EXISTS \"regexs\" ( \"description\" TEXT, \"regex\" TEXT, \"enabled\" TEXT );"; //if tables not exists so we need to create them so we can communicate.
+        stmt = c.createStatement();
+        stmt.executeUpdate(sql);
+        stmt.close();
+        ResultSet rs = stmt.executeQuery("SELECT * FROM settings;"); //get the settings.
+        String variable;
+        String value;
+        while (rs.next()) {
+            variable = rs.getString("variable");
+            value = rs.getString("value");
+            //set variables
+            if (variable.equals("sleepTime")) {
+                threadSleepTime = Integer.parseInt(value);
+            } else if (variable.equals("HTTPTimeout")) {
+                threadHTTPTimeout = Integer.parseInt(value);
+            } else if (variable.equals("threadTimeoutLimit")) {
+                threadTimeoutLimit = Integer.parseInt(value);
+            }
+        }
+        System.out.println("Settings loaded succesfully.");
+
+        rs.close();
+        rs = stmt.executeQuery("SELECT * FROM regexs;");
+        String descr;
+        String regex;
+        String enabled;
+        while (rs.next()) {
+            descr = rs.getString("description");
+            regex = rs.getString("regex");
+            enabled = rs.getString("enabled");
+            regexs.addRow(new Object[]{descr, regex, Boolean.parseBoolean(enabled)}); //ad new regex from database
+        }
+        if (regexs.getRowCount() == 0) { //it means that no regex found so we need to add default emails regex
+            regexs.addRow(new Object[]{"Default emails regex", "([a-zA-Z0-9.]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,5})))", true});
+        }
+        System.out.println("Regexs loaded succesfully.");
+        c.close();
+    }
+
+    public static void saveSettings() throws SQLException {
+        Connection c = null;
+        Statement stmt = null;
+        try {
+            Class.forName("org.sqlite.JDBC");
+            c = DriverManager.getConnection("jdbc:sqlite:test.db");
+        } catch (ClassNotFoundException | SQLException e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            System.exit(0);
+        }
+        String sql = "CREATE TABLE IF NOT EXISTS \"settings\" ( \"variable\" TEXT, \"value\" TEXT ); CREATE TABLE IF NOT EXISTS \"regexs\" ( \"description\" TEXT, \"regex\" TEXT, \"enabled\" TEXT );"; //if tables not exists so we need to create them so we can communicate.
+        stmt = c.createStatement();
+        stmt.executeUpdate(sql);
+        sql = "DELETE FROM settings; DELETE FROM regexs;"; //delete all from the tables
+        stmt.executeUpdate(sql);
+        //start to insert
+        sql = "INSERT INTO settings (\"variable\", \"value\") VALUES (\"sleepTime\",\"" + threadSleepTime + "\");";
+        stmt.executeUpdate(sql);
+        sql = "INSERT INTO settings (\"variable\", \"value\") VALUES (\"HTTPTimeout\",\"" + threadHTTPTimeout + "\");";
+        stmt.executeUpdate(sql);
+        sql = "INSERT INTO settings (\"variable\", \"value\") VALUES (\"threadTimeoutLimit\",\"" + threadTimeoutLimit + "\");";
+        stmt.executeUpdate(sql);
+        for (int x = 0; x < regexs.getRowCount(); x++) {
+            sql = "INSERT INTO regexs (\"description\", \"regex\", \"enabled\") VALUES (\""+regexs.getValueAt(x, 0)+"\",\""+regexs.getValueAt(x, 1)+"\",\""+regexs.getValueAt(x, 2)+"\");";
+            stmt.executeUpdate(sql);
+        }
+        stmt.close();
+        //save the settings
+        c.close();
+    }
 }

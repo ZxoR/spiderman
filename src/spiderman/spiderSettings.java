@@ -5,6 +5,10 @@
  */
 package spiderman;
 
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author ZxoR (Yonatan)
@@ -190,6 +194,11 @@ public class spiderSettings extends javax.swing.JDialog {
         main.threadHTTPTimeout = (int) threadHTTPTimeout.getValue();
         main.threadTimeoutLimit = (int) threadTimeOutLimit.getValue();
         this.setVisible(false);
+        try {
+            main.saveSettings();
+        } catch (SQLException ex) {
+            Logger.getLogger(spiderSettings.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_applyButtonActionPerformed
 
     /**

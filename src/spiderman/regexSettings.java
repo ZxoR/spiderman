@@ -5,6 +5,9 @@
  */
 package spiderman;
 
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.JOptionPane;
@@ -161,6 +164,11 @@ public class regexSettings extends javax.swing.JDialog {
             main.regexs.addRow(new Object[]{desc, regex, enabled});
         }
         this.setVisible(false);
+        try {
+            main.saveSettings();
+        } catch (SQLException ex) {
+            Logger.getLogger(regexSettings.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_applyButtonActionPerformed
 
     /**
