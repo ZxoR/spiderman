@@ -31,7 +31,7 @@ public class loadingDialog extends javax.swing.JDialog {
                     sleep(500);
                     infoLabel.setText("Loading settings...");
                     try {
-                        spiderman.main.loadSettings();
+                        main.loadSettings();
                     } catch (SQLException ex) {
                         Logger.getLogger(loadingDialog.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -39,11 +39,9 @@ public class loadingDialog extends javax.swing.JDialog {
                     infoLabel.setText("Loading queue and cache (It might take a while)");
 //do: load queue and cache... ask the use?
                     pBar.setValue(pBar.getValue() + 1);
-
-                    sleep(1500);
                     infoLabel.setText("Finalizing...");
                     pBar.setValue(pBar.getValue() + 1);
-                    sleep(500);
+                    sleep(100);
                     loadingDialog.super.setVisible(false);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(loadingDialog.class.getName()).log(Level.SEVERE, null, ex);
