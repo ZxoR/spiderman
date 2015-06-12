@@ -733,7 +733,7 @@ public class main extends javax.swing.JFrame {
         Statement stmt = null;
         try {
             Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection("jdbc:sqlite:test.db");
+            c = DriverManager.getConnection("jdbc:sqlite:settings.db");
         } catch (ClassNotFoundException | SQLException e) {
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
             System.exit(0);
@@ -782,7 +782,7 @@ public class main extends javax.swing.JFrame {
         Statement stmt = null;
         try {
             Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection("jdbc:sqlite:test.db");
+            c = DriverManager.getConnection("jdbc:sqlite:settings.db");
         } catch (ClassNotFoundException | SQLException e) {
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
             System.exit(0);
@@ -790,17 +790,17 @@ public class main extends javax.swing.JFrame {
         String sql = "CREATE TABLE IF NOT EXISTS \"settings\" ( \"variable\" TEXT, \"value\" TEXT ); CREATE TABLE IF NOT EXISTS \"regexs\" ( \"description\" TEXT, \"regex\" TEXT, \"enabled\" TEXT );"; //if tables not exists so we need to create them so we can communicate.
         stmt = c.createStatement();
         stmt.executeUpdate(sql);
-        sql = "DELETE FROM settings; DELETE FROM regexs;"; //delete all from the tables
+        sql = "DELETE FROM settings; DELETE FROM regexs;"; //delete all data from the tables
         stmt.executeUpdate(sql);
-        //start to insert
+        //start to insert static variables
         sql = "INSERT INTO settings (\"variable\", \"value\") VALUES (\"sleepTime\",\"" + threadSleepTime + "\");";
         stmt.executeUpdate(sql);
         sql = "INSERT INTO settings (\"variable\", \"value\") VALUES (\"HTTPTimeout\",\"" + threadHTTPTimeout + "\");";
         stmt.executeUpdate(sql);
         sql = "INSERT INTO settings (\"variable\", \"value\") VALUES (\"threadTimeoutLimit\",\"" + threadTimeoutLimit + "\");";
         stmt.executeUpdate(sql);
-        for (int x = 0; x < regexs.getRowCount(); x++) {
-            sql = "INSERT INTO regexs (\"description\", \"regex\", \"enabled\") VALUES (\""+regexs.getValueAt(x, 0)+"\",\""+regexs.getValueAt(x, 1)+"\",\""+regexs.getValueAt(x, 2)+"\");";
+        for (int x = 0; x < regexs.getRowCount(); x++) { //insert all the regexes
+            sql = "INSERT INTO regexs (\"description\", \"regex\", \"enabled\") VALUES (\"" + regexs.getValueAt(x, 0) + "\",\"" + regexs.getValueAt(x, 1) + "\",\"" + regexs.getValueAt(x, 2) + "\");";
             stmt.executeUpdate(sql);
         }
         stmt.close();

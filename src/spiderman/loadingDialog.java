@@ -29,14 +29,17 @@ public class loadingDialog extends javax.swing.JDialog {
                 try {
                     //main maindiag = new main();
                     sleep(500);
-                    pBar.setValue(pBar.getValue() + 1);
-                    infoLabel.setText("Loading databse...");
+                    infoLabel.setText("Loading settings...");
                     try {
                         spiderman.main.loadSettings();
                     } catch (SQLException ex) {
                         Logger.getLogger(loadingDialog.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     pBar.setValue(pBar.getValue() + 1);
+                    infoLabel.setText("Loading queue and cache (It might take a while)");
+//do: load queue and cache... ask the use?
+                    pBar.setValue(pBar.getValue() + 1);
+
                     sleep(1500);
                     infoLabel.setText("Finalizing...");
                     pBar.setValue(pBar.getValue() + 1);
