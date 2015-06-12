@@ -5,7 +5,8 @@
  */
 package spiderman;
 
-import java.security.MessageDigest;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,17 +17,17 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.NoSuchAlgorithmException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-//import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -35,7 +36,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class main extends javax.swing.JFrame {
 
-    final Object lock = new Object();
+    final static Object lock = new Object();
     final JFileChooser fc = new JFileChooser();
     final ArrayList<Thread> threads;
     int statsscanned = 0; //how much scanned pages.
@@ -43,11 +44,28 @@ public class main extends javax.swing.JFrame {
     long[] tasktime;
     private boolean threadsSuspended;
     final static DefaultTableModel regexs = new DefaultTableModel(0, 3);
+//spiderSettings communication and defaults
+    static int threadSleepTime = 1000;
+    static int threadHTTPTimeout = 5000;
+    static int threadTimeoutLimit = 25000;
+//eof spiderSettings
 
     public main() {
         initComponents();
+        this.setVisible(false);
+        loadingDialog loading = new loadingDialog(this, true);
+        loading.setVisible(true);
+        loading.addWindowListener(new WindowAdapter() {
+            public void windowClosed(WindowEvent e) {
+                System.out.println("Window closed");
+                try {
+                    main.super.setVisible(true);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
+            }
+        });
         threads = new ArrayList<Thread>();
-        regexs.addRow(new Object[]{"Emails regex","([a-zA-Z0-9.]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,5})))",true});
         queueList.add("http://www.hometheater.co.il");
         queueList.add("http://www.israelweather.co.il/forecast/index.html"); //its duplicated.. for testing. not production!
         queueList.add("http://stackoverflow.com/questions/7042762/easier-way-to-synchronize-2-threads-in-java");
@@ -65,66 +83,35 @@ public class main extends javax.swing.JFrame {
 
         queueList = new java.awt.List();
         emailsFound = new java.awt.List();
-        startThreadsButton = new javax.swing.JButton();
         knownList = new java.awt.List();
-        suspendButton = new javax.swing.JButton();
-        unsuspendButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        destroyThreadsButton = new javax.swing.JButton();
         statsLable = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         agentsTable = new javax.swing.JTable();
         saveEmailsButton = new javax.swing.JButton();
-        threadSpinner = new javax.swing.JSpinner();
-        jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
+        cleanEmailsList = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        threadSpinner = new javax.swing.JSpinner();
+        startThreadsButton = new javax.swing.JButton();
+        suspendButton = new javax.swing.JButton();
+        unsuspendButton = new javax.swing.JButton();
+        destroyThreadsButton = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
         regexListButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SPIDERman - If you can't beat them - Sell them weapons. [BINARY]");
 
-        startThreadsButton.setText("Start threads");
-        startThreadsButton.setMaximumSize(new java.awt.Dimension(119, 25));
-        startThreadsButton.setMinimumSize(new java.awt.Dimension(119, 25));
-        startThreadsButton.setPreferredSize(new java.awt.Dimension(119, 25));
-        startThreadsButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                startThreadsButtonActionPerformed(evt);
-            }
-        });
-
         knownList.setVisible(false);
-
-        suspendButton.setText("Suspend");
-        suspendButton.setToolTipText("");
-        suspendButton.setEnabled(false);
-        suspendButton.setPreferredSize(new java.awt.Dimension(119, 25));
-        suspendButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                suspendButtonActionPerformed(evt);
-            }
-        });
-
-        unsuspendButton.setText("Resume");
-        unsuspendButton.setEnabled(false);
-        unsuspendButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                unsuspendButtonActionPerformed(evt);
-            }
-        });
 
         jLabel1.setText("Emails found:");
 
         jLabel2.setText("Queue:");
-
-        destroyThreadsButton.setText("Destroy threads");
-        destroyThreadsButton.setEnabled(false);
-        destroyThreadsButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                destroyThreadsButtonActionPerformed(evt);
-            }
-        });
 
         statsLable.setForeground(new java.awt.Color(0, 24, 255));
         statsLable.setText("Statistics:");
@@ -167,11 +154,96 @@ public class main extends javax.swing.JFrame {
             }
         });
 
+        jLabel4.setText("Agents:");
+
+        cleanEmailsList.setText("Clear emails");
+        cleanEmailsList.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cleanEmailsListActionPerformed(evt);
+            }
+        });
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder(null, "Agents controller", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION))));
+
+        jLabel3.setText("Agents:");
+
         threadSpinner.setModel(new javax.swing.SpinnerNumberModel(2, 1, 10, 1));
 
-        jLabel3.setText("Agents to run:");
+        startThreadsButton.setText("Run agents");
+        startThreadsButton.setMaximumSize(new java.awt.Dimension(119, 25));
+        startThreadsButton.setMinimumSize(new java.awt.Dimension(119, 25));
+        startThreadsButton.setPreferredSize(new java.awt.Dimension(119, 25));
+        startThreadsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startThreadsButtonActionPerformed(evt);
+            }
+        });
 
-        jLabel4.setText("Agents:");
+        suspendButton.setText("Suspend");
+        suspendButton.setToolTipText("");
+        suspendButton.setEnabled(false);
+        suspendButton.setPreferredSize(new java.awt.Dimension(119, 25));
+        suspendButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                suspendButtonActionPerformed(evt);
+            }
+        });
+
+        unsuspendButton.setText("Resume");
+        unsuspendButton.setEnabled(false);
+        unsuspendButton.setPreferredSize(new java.awt.Dimension(119, 25));
+        unsuspendButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                unsuspendButtonActionPerformed(evt);
+            }
+        });
+
+        destroyThreadsButton.setText("Destroy agents");
+        destroyThreadsButton.setEnabled(false);
+        destroyThreadsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                destroyThreadsButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(startThreadsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(threadSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(suspendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(unsuspendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE))
+                    .addComponent(destroyThreadsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(6, 6, 6)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(threadSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(startThreadsButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(suspendButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(unsuspendButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(destroyThreadsButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "spiderman", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
 
         regexListButton.setText("Regex list");
         regexListButton.addActionListener(new java.awt.event.ActionListener() {
@@ -179,6 +251,39 @@ public class main extends javax.swing.JFrame {
                 regexListButtonActionPerformed(evt);
             }
         });
+
+        jButton1.setText("spiderman Settings");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jButton2.setText("About spiderman");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(regexListButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jButton1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(regexListButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButton2)
+                .addContainerGap(22, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -189,45 +294,44 @@ public class main extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(knownList, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                        .addGap(704, 704, 704))
+                        .addGap(948, 948, 948))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(threadSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(12, 12, 12)
-                                .addComponent(startThreadsButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(suspendButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(unsuspendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(destroyThreadsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(emailsFound, javax.swing.GroupLayout.PREFERRED_SIZE, 673, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel2)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(saveEmailsButton))
-                                .addComponent(queueList, javax.swing.GroupLayout.PREFERRED_SIZE, 673, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(jLabel2)
+                                .addGap(651, 651, 651))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel4)
-                                    .addComponent(regexListButton, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 0, Short.MAX_VALUE))))
+                                    .addComponent(emailsFound, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addGap(0, 0, Short.MAX_VALUE)
+                                        .addComponent(cleanEmailsList)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(saveEmailsButton))
+                                    .addComponent(queueList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jLabel1))
+                                .addGap(18, 18, 18))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGap(356, 356, 356)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addGap(262, 262, 262))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                                .addContainerGap())))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(93, 93, 93)
-                        .addComponent(statsLable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addGap(6, 6, 6)
+                        .addComponent(statsLable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
@@ -235,34 +339,27 @@ public class main extends javax.swing.JFrame {
                 .addGap(5, 5, 5)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(emailsFound, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
+                        .addComponent(emailsFound, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel2)
-                            .addComponent(saveEmailsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(saveEmailsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(cleanEmailsList))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(queueList, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(queueList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(4, 4, 4))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(suspendButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(threadSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(unsuspendButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(startThreadsButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(destroyThreadsButton)
-                            .addComponent(regexListButton)))
-                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(knownList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(27, 27, 27))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(statsLable)
-                        .addContainerGap())))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(12, 12, 12)
+                .addComponent(statsLable))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(362, 362, 362)
+                .addComponent(knownList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -342,6 +439,16 @@ public class main extends javax.swing.JFrame {
         diag.setVisible(true);
     }//GEN-LAST:event_regexListButtonActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        spiderSettings diag = new spiderSettings(this, true);
+        diag.setLocationRelativeTo(this);
+        diag.setVisible(true);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void cleanEmailsListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cleanEmailsListActionPerformed
+        emailsFound.removeAll();
+    }//GEN-LAST:event_cleanEmailsListActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -379,12 +486,17 @@ public class main extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable agentsTable;
+    private javax.swing.JButton cleanEmailsList;
     private javax.swing.JButton destroyThreadsButton;
     private java.awt.List emailsFound;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane2;
     private java.awt.List knownList;
     private java.awt.List queueList;
@@ -421,7 +533,7 @@ public class main extends javax.swing.JFrame {
                     conn.disconnect();
                     System.out.println("Timeout has been handled.");
                 }
-            }, 5 * 1000); //5 seconds time out
+            }, main.threadHTTPTimeout);
             while ((line = rd.readLine()) != null) {
                 result += line;
             }
@@ -516,7 +628,7 @@ public class main extends javax.swing.JFrame {
             long ctime;
             agentsmodel.setValueAt("Starting", id, 1);
             try {
-                Thread.sleep(id * 1000); //1 seconds revah
+                Thread.sleep(id * 1000); //1 seconds between threads
             } catch (InterruptedException ex) {
                 Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -561,7 +673,7 @@ public class main extends javax.swing.JFrame {
                             }
                         }
 
-                    }, 25 * 1000); //25 seconds per thread run.
+                    }, main.threadTimeoutLimit);
                     source = getHTML(url);
 
                     try {
@@ -584,7 +696,7 @@ public class main extends javax.swing.JFrame {
 
                     try {
                         agentsmodel.setValueAt("Sleeping", id, 1);
-                        Thread.sleep(500);
+                        Thread.sleep(main.threadSleepTime);
                     } catch (InterruptedException ex) {
                         System.err.println("thread id: " + id + " exception when trying to proccess " + url + ". ERROR MESSAGE: " + ex.getMessage().toString());
                     }
@@ -658,4 +770,118 @@ public class main extends javax.swing.JFrame {
         return (MD5.toHexString(MD5.computeMD5(message.toLowerCase().getBytes())));
     }
 
+    public static void loadSettings() throws SQLException {
+        Connection c = null;
+        Statement stmt = null;
+        try {
+            Class.forName("org.sqlite.JDBC");
+            c = DriverManager.getConnection("jdbc:sqlite:settings.db");
+        } catch (ClassNotFoundException | SQLException e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            System.exit(0);
+        }
+        String sql = "CREATE TABLE IF NOT EXISTS \"settings\" ( \"variable\" TEXT, \"value\" TEXT ); CREATE TABLE IF NOT EXISTS \"regexs\" ( \"description\" TEXT, \"regex\" TEXT, \"enabled\" TEXT );"; //if tables not exists so we need to create them so we can communicate.
+        stmt = c.createStatement();
+        stmt.executeUpdate(sql);
+        stmt.close();
+        ResultSet rs = stmt.executeQuery("SELECT * FROM settings;"); //get the settings.
+        String variable;
+        String value;
+        while (rs.next()) {
+            variable = rs.getString("variable");
+            value = rs.getString("value");
+            //set variables
+            if (variable.equals("sleepTime")) {
+                threadSleepTime = Integer.parseInt(value);
+            } else if (variable.equals("HTTPTimeout")) {
+                threadHTTPTimeout = Integer.parseInt(value);
+            } else if (variable.equals("threadTimeoutLimit")) {
+                threadTimeoutLimit = Integer.parseInt(value);
+            }
+        }
+        System.out.println("Settings loaded succesfully.");
+
+        rs.close();
+        rs = stmt.executeQuery("SELECT * FROM regexs;");
+        String descr;
+        String regex;
+        String enabled;
+        while (rs.next()) {
+            descr = rs.getString("description");
+            regex = rs.getString("regex");
+            enabled = rs.getString("enabled");
+            regexs.addRow(new Object[]{descr, regex, Boolean.parseBoolean(enabled)}); //ad new regex from database
+        }
+        if (regexs.getRowCount() == 0) { //it means that no regex found so we need to add default emails regex
+            regexs.addRow(new Object[]{"Default emails regex", "([a-zA-Z0-9.]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,5})))", true});
+        }
+        System.out.println("Regexs loaded succesfully.");
+        c.close();
+    }
+
+    public static void saveSettings() throws SQLException {
+        Connection c = null;
+        Statement stmt = null;
+        try {
+            Class.forName("org.sqlite.JDBC");
+            c = DriverManager.getConnection("jdbc:sqlite:settings.db");
+        } catch (ClassNotFoundException | SQLException e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            System.exit(0);
+        }
+        String sql = "CREATE TABLE IF NOT EXISTS \"settings\" ( \"variable\" TEXT, \"value\" TEXT ); CREATE TABLE IF NOT EXISTS \"regexs\" ( \"description\" TEXT, \"regex\" TEXT, \"enabled\" TEXT );"; //if tables not exists so we need to create them so we can communicate.
+        stmt = c.createStatement();
+        stmt.executeUpdate(sql);
+        sql = "DELETE FROM settings; DELETE FROM regexs;"; //delete all data from the tables
+        stmt.executeUpdate(sql);
+        //start to insert static variables
+        sql = "INSERT INTO settings (\"variable\", \"value\") VALUES (\"sleepTime\",\"" + threadSleepTime + "\");";
+        stmt.executeUpdate(sql);
+        sql = "INSERT INTO settings (\"variable\", \"value\") VALUES (\"HTTPTimeout\",\"" + threadHTTPTimeout + "\");";
+        stmt.executeUpdate(sql);
+        sql = "INSERT INTO settings (\"variable\", \"value\") VALUES (\"threadTimeoutLimit\",\"" + threadTimeoutLimit + "\");";
+        stmt.executeUpdate(sql);
+        for (int x = 0; x < regexs.getRowCount(); x++) { //insert all the regexes
+            sql = "INSERT INTO regexs (\"description\", \"regex\", \"enabled\") VALUES (\"" + regexs.getValueAt(x, 0) + "\",\"" + regexs.getValueAt(x, 1) + "\",\"" + regexs.getValueAt(x, 2) + "\");";
+            stmt.executeUpdate(sql);
+        }
+        stmt.close();
+        //save the settings
+        c.close();
+    }
+
+    public void saveQueue() throws SQLException {
+        Connection c = null;
+
+        Statement stmt = null;
+
+        try {
+            Class.forName("org.sqlite.JDBC");
+            c = DriverManager.getConnection("jdbc:sqlite:settings.db");
+        } catch (ClassNotFoundException | SQLException e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            System.exit(0);
+        }
+        String sql = "CREATE TABLE IF NOT EXISTS \"queue\" ( \"address\" TEXT );"; //if tables not exists so we need to create them so we can communicate.
+        stmt = c.createStatement();
+
+        stmt.executeUpdate(sql);
+        sql = "DELETE FROM queue; "; //delete all data from the tables
+
+        stmt.executeUpdate(sql);
+
+        //start to save the list
+        synchronized (lock) { //I dont want more queue's.. I have to lock it..
+            for (int x = 0; x < queueList.getItemCount(); x++) {
+                sql = "INSERT INTO queue (\"address\") VALUES (\"" + queueList.getItem(x) + "\");";  //delete all data from the tables
+                stmt.executeUpdate(sql);
+
+            }
+        }
+
+        stmt.close();
+
+        //save the settings
+        c.close();
+    }
 }
