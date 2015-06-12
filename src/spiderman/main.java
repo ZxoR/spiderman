@@ -33,7 +33,7 @@ import javax.swing.table.DefaultTableModel;
  * @author ZxoR (Yonatan)
  */
 public class main extends javax.swing.JFrame {
-    
+
     final Object lock = new Object();
     final JFileChooser fc = new JFileChooser();
     final ArrayList<Thread> threads;
@@ -42,9 +42,13 @@ public class main extends javax.swing.JFrame {
     long[] tasktime;
     private boolean threadsSuspended;
     final static DefaultTableModel regexs = new DefaultTableModel(0, 3);
-    
+//spiderSettings communication and defaults
+    static int threadSleepTime = 1000;
+    static int threadHTTPTimeout = 5000;
+    static int threadTimeoutLimit = 25000;
+//eof spiderSettings
+
     public main() {
-        
         initComponents();
         this.setVisible(false);
         loadingDialog loading = new loadingDialog(this, true);
@@ -59,7 +63,7 @@ public class main extends javax.swing.JFrame {
                 }
             }
         });
-        
+
         threads = new ArrayList<Thread>();
         regexs.addRow(new Object[]{"Emails regex", "([a-zA-Z0-9.]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,5})))", true});
         queueList.add("http://www.hometheater.co.il");
@@ -303,7 +307,7 @@ public class main extends javax.swing.JFrame {
         for (Thread thread : threads) {
             thread.start();
         }
-        
+
         threadSpinner.setEnabled(false);
         suspendButton.setEnabled(true);
         destroyThreadsButton.setEnabled(true);
@@ -428,14 +432,14 @@ public class main extends javax.swing.JFrame {
     private javax.swing.JButton unsuspendButton;
     // End of variables declaration//GEN-END:variables
    public String getHTML(String urlToRead) throws MalformedURLException {
-        
+
         URL url;
         final HttpURLConnection conn;
         final BufferedReader rd;
         String line;
         String result = "";
         url = new URL(urlToRead);
-        
+
         try {
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -452,7 +456,7 @@ public class main extends javax.swing.JFrame {
                     conn.disconnect();
                     System.out.println("Timeout has been handled.");
                 }
-            }, 5 * 1000); //5 seconds time out
+            }, main.threadHTTPTimeout);
             while ((line = rd.readLine()) != null) {
                 result += line;
             }
@@ -466,7 +470,7 @@ public class main extends javax.swing.JFrame {
         }
         return result;
     }
-    
+
     public boolean isInList(java.awt.List list, String string) {
         for (int x = 0; x < list.getItemCount(); x++) {
             if (list.getItem(x).equals(string)) {
@@ -475,12 +479,12 @@ public class main extends javax.swing.JFrame {
         }
         return false;
     }
-    
+
     public void extracturls(String sourceCode, String originalurl) throws MalformedURLException {
         Pattern p = Pattern.compile("href=\"(.*?)\"");
         Matcher m = p.matcher(sourceCode);
         String url;
-        
+
         while (m.find()) {
             if (!m.group(1).contains("#")) {
                 if ((m.group(1).toString().contains(".html")) || (m.group(1).toString().contains(".php"))) {
@@ -505,7 +509,7 @@ public class main extends javax.swing.JFrame {
             }
         }
     }
-    
+
     public void updateStats() {
         if (threads.isEmpty()) {
             statsLable.setText("Statistics: ");
@@ -519,7 +523,7 @@ public class main extends javax.swing.JFrame {
         total = (TimeUnit.MINUTES.toNanos(1) / total) * tasktime.length;
         statsLable.setText("Statistics: Agents running: " + threads.size() + ". Queued: " + queueList.countItems() + ". Emails found: " + emailsFound.countItems() + ". Cached: " + knownList.countItems() + ". Already scanned: " + statsscanned + ". Threads Per Minute: " + total + "T/pm.");
     }
-    
+
     public void extractemails(String sourceCode) {
         Pattern p = Pattern.compile("([a-zA-Z0-9.]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,5})))");
         Matcher m = p.matcher(sourceCode);
@@ -531,15 +535,15 @@ public class main extends javax.swing.JFrame {
             }
         }
     }
-    
+
     class Task extends Thread {
-        
+
         int id;
-        
+
         public Task(int i) {
             this.id = i;
         }
-        
+
         @Override
         public void run() {
             String url;
@@ -547,7 +551,7 @@ public class main extends javax.swing.JFrame {
             long ctime;
             agentsmodel.setValueAt("Starting", id, 1);
             try {
-                Thread.sleep(id * 1000); //1 seconds revah
+                Thread.sleep(id * 1000); //1 seconds between threads
             } catch (InterruptedException ex) {
                 Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -591,16 +595,16 @@ public class main extends javax.swing.JFrame {
                                 System.out.println("Socket crash has been handled and recreated!!!");
                             }
                         }
-                        
-                    }, 25 * 1000); //25 seconds per thread run.
+
+                    }, main.threadTimeoutLimit); 
                     source = getHTML(url);
-                    
+
                     try {
                         extracturls(source, url);
                     } catch (MalformedURLException ex) {
                         Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    
+
                     extractemails(source);
                     statsscanned++;
                     tasktime[id] = (System.nanoTime()
@@ -608,21 +612,21 @@ public class main extends javax.swing.JFrame {
                     agentsmodel.setValueAt(
                             (TimeUnit.MINUTES.toNanos(1) / tasktime[id]) + "T/pm", id, 2);
                     updateStats();
-                    
+
                     timer.cancel();
-                    
+
                     timer.purge();
-                    
+
                     try {
                         agentsmodel.setValueAt("Sleeping", id, 1);
-                        Thread.sleep(500);
+                        Thread.sleep(main.threadSleepTime);
                     } catch (InterruptedException ex) {
                         System.err.println("thread id: " + id + " exception when trying to proccess " + url + ". ERROR MESSAGE: " + ex.getMessage().toString());
                     }
                 } catch (MalformedURLException ex) {
                     System.err.println("thread id: " + id + " exception when trying to proccess everything. ERROR MESSAGE: " + ex.getMessage().toString());
                 }
-                
+
             }
         }
     }
@@ -654,18 +658,18 @@ public class main extends javax.swing.JFrame {
                 position = mid;
                 hasBroken = true;
                 break;
-                
+
             }
         }
         position = hasBroken ? position : mid;
-        
+
         if (position >= 0) {
             list.add(key, position);
             return;
         }
         position = ~position;
         list.add(key, position);
-        
+
     }
 
     //performs a binary swearch
@@ -684,9 +688,9 @@ public class main extends javax.swing.JFrame {
         }
         return -1;
     }
-    
+
     public String toMD5(String message) {
         return (MD5.toHexString(MD5.computeMD5(message.toLowerCase().getBytes())));
     }
-    
+
 }

@@ -23,23 +23,18 @@ public class loadingDialog extends javax.swing.JDialog {
     public loadingDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
-            //Timer timer = new Timer();
-            /*timer.schedule(new TimerTask() {
-         @Override
-         public void run() {
-         loadingDialog.super.setVisible(false);
-         }
-         }, 2 * 1000);*/
-        //main maindiag = new main();
         Thread thread = new Thread() {
             public void run() {
                 try {
                     sleep(500);
                     infoLabel.setText("Loading UI...");
+                    pBar.setValue(pBar.getValue() + 1);
                     sleep(1000);
                     infoLabel.setText("Loading databse...");
+                    pBar.setValue(pBar.getValue() + 1);
                     sleep(1500);
                     infoLabel.setText("Finalizing...");
+                    pBar.setValue(pBar.getValue() + 1);
                     sleep(500);
                     loadingDialog.super.setVisible(false);
                 } catch (InterruptedException ex) {
@@ -47,7 +42,6 @@ public class loadingDialog extends javax.swing.JDialog {
                 }
             }
         };
-
         thread.start();
     }
 
@@ -60,7 +54,7 @@ public class loadingDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jProgressBar1 = new javax.swing.JProgressBar();
+        pBar = new javax.swing.JProgressBar();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         infoLabel = new javax.swing.JLabel();
@@ -68,6 +62,8 @@ public class loadingDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
         setType(java.awt.Window.Type.POPUP);
+
+        pBar.setMaximum(3);
 
         jLabel1.setFont(new java.awt.Font("Ubuntu", 0, 200)); // NOI18N
         jLabel1.setText("spiderman");
@@ -83,7 +79,7 @@ public class loadingDialog extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(pBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -101,7 +97,7 @@ public class loadingDialog extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addGap(18, 18, 18)
-                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(pBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(infoLabel)
                 .addContainerGap())
@@ -157,6 +153,6 @@ public class loadingDialog extends javax.swing.JDialog {
     private javax.swing.JLabel infoLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JProgressBar jProgressBar1;
+    private javax.swing.JProgressBar pBar;
     // End of variables declaration//GEN-END:variables
 }
