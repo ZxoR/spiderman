@@ -109,7 +109,7 @@ public class main extends javax.swing.JFrame {
 
         knownList.setVisible(false);
 
-        jLabel1.setText("Emails found:");
+        jLabel1.setText("Results:");
 
         jLabel2.setText("Queue:");
 
@@ -147,7 +147,7 @@ public class main extends javax.swing.JFrame {
             agentsTable.getColumnModel().getColumn(1).setResizable(false);
         }
 
-        saveEmailsButton.setText("Save emails to file");
+        saveEmailsButton.setText("Save results");
         saveEmailsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveEmailsButtonActionPerformed(evt);
@@ -156,7 +156,7 @@ public class main extends javax.swing.JFrame {
 
         jLabel4.setText("Agents:");
 
-        cleanEmailsList.setText("Clear emails");
+        cleanEmailsList.setText("Clear results");
         cleanEmailsList.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cleanEmailsListActionPerformed(evt);
@@ -276,13 +276,13 @@ public class main extends javax.swing.JFrame {
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(18, 18, 18)
                 .addComponent(jButton1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(regexListButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jButton2)
-                .addContainerGap(22, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -800,7 +800,6 @@ public class main extends javax.swing.JFrame {
             }
         }
         System.out.println("Settings loaded succesfully.");
-
         rs.close();
         rs = stmt.executeQuery("SELECT * FROM regexs;");
         String descr;
