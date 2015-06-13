@@ -601,14 +601,18 @@ public class main extends javax.swing.JFrame {
         statsLable.setText("Statistics: Agents running: " + threads.size() + ". Queued: " + queueList.countItems() + ". Emails found: " + emailsFound.countItems() + ". Cached: " + knownList.countItems() + ". Already scanned: " + statsscanned + ". Threads Per Minute: " + total + "T/pm.");
     }
 
-    public void extractemails(String sourceCode) {
-        Pattern p = Pattern.compile("([a-zA-Z0-9.]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,5})))");
-        Matcher m = p.matcher(sourceCode);
-        String email = null;
-        while (m.find()) {
-            email = m.group(1); // this variable should contain the link URL
-            if (!isInList(emailsFound, email)) {
-                emailsFound.add(email);
+    //Preform search for any regex in the list if its enabled...
+    public void regexssearch(String sourceCode) {
+        for (int x = 0; x < regexs.getRowCount(); x++) {
+            if (!Boolean.parseBoolean(regexs.getValueAt(x, 2).toString())) continue;
+            Pattern p = Pattern.compile(regexs.getValueAt(x, 1).toString());
+            Matcher m = p.matcher(sourceCode);
+            String result = null;
+            while (m.find()) {
+                result = m.group(1); // this variable should contain the result
+                if (!isInList(emailsFound, result)) {
+                    emailsFound.add(result + " [" + regexs.getValueAt(x, 0).toString() + "]");
+                }
             }
         }
     }
@@ -682,7 +686,7 @@ public class main extends javax.swing.JFrame {
                         Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
-                    extractemails(source);
+                    regexssearch(source);
                     statsscanned++;
                     tasktime[id] = (System.nanoTime()
                             - ctime);
@@ -708,7 +712,7 @@ public class main extends javax.swing.JFrame {
         }
     }
 
-// if it returns a positive number it exists in the 
+// if it returns a positive number it exists in the list
     public boolean isInSortedList(java.awt.List list, String string) {
         return !(BinarySearch(list, string) < 0);
     }
@@ -749,7 +753,7 @@ public class main extends javax.swing.JFrame {
 
     }
 
-    //performs a binary swearch
+    //performs a binary search
     public int BinarySearch(java.awt.List list, String key) {
         int lo = 0;
         int hi = list.getItemCount() - 1;
@@ -849,7 +853,7 @@ public class main extends javax.swing.JFrame {
         c.close();
     }
 
-    public void saveQueue() throws SQLException {
+    public void saveQueue() throws SQLException { //DO NOT USE
         Connection c = null;
 
         Statement stmt = null;
@@ -882,5 +886,5 @@ public class main extends javax.swing.JFrame {
 
         //save the settings
         c.close();
-    }
+    } //DO NOT USE
 }
