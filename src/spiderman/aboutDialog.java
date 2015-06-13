@@ -43,7 +43,7 @@ public class aboutDialog extends javax.swing.JDialog {
         getContentPane().add(jLabel2);
         jLabel2.setBounds(10, 10, 490, 490);
 
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/spiderman/spider-512.png"))); // NOI18N
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/spiderman/images/spider-512.png"))); // NOI18N
         getContentPane().add(jLabel1);
         jLabel1.setBounds(0, 0, 512, 512);
 
