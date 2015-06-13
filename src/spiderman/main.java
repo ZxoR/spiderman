@@ -35,7 +35,7 @@ import javax.swing.table.DefaultTableModel;
  * @author ZxoR (Yonatan)
  */
 public class main extends javax.swing.JFrame {
-
+    
     final static Object lock = new Object();
     final JFileChooser fc = new JFileChooser();
     final ArrayList<Thread> threads;
@@ -82,7 +82,7 @@ public class main extends javax.swing.JFrame {
     private void initComponents() {
 
         queueList = new java.awt.List();
-        emailsFound = new java.awt.List();
+        resultsList = new java.awt.List();
         knownList = new java.awt.List();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -99,9 +99,8 @@ public class main extends javax.swing.JFrame {
         suspendButton = new javax.swing.JButton();
         unsuspendButton = new javax.swing.JButton();
         destroyThreadsButton = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
-        regexListButton = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
+        regexListButton = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -114,6 +113,7 @@ public class main extends javax.swing.JFrame {
         jLabel2.setText("Queue:");
 
         statsLable.setForeground(new java.awt.Color(0, 24, 255));
+        statsLable.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         statsLable.setText("Statistics:");
 
         agentsTable.setModel(new javax.swing.table.DefaultTableModel(
@@ -213,11 +213,11 @@ public class main extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(startThreadsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(startThreadsButton, javax.swing.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(threadSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addComponent(threadSpinner))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(suspendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -243,7 +243,12 @@ public class main extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "spiderman", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
+        jButton1.setText("spiderman Settings");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         regexListButton.setText("Regex list");
         regexListButton.addActionListener(new java.awt.event.ActionListener() {
@@ -252,114 +257,94 @@ public class main extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setText("spiderman Settings");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        jButton2.setText("About spiderman");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                jButton2ActionPerformed(evt);
             }
         });
-
-        jButton2.setText("About spiderman");
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(regexListButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(18, 18, 18)
-                .addComponent(jButton1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(regexListButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton2)
-                .addContainerGap(18, Short.MAX_VALUE))
-        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(408, 408, 408)
+                .addComponent(knownList, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addComponent(statsLable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(274, 274, 274))
+            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(knownList, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                        .addGap(948, 948, 948))
+                        .addContainerGap()
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jButton1)
+                        .addGap(16, 16, 16)
+                        .addComponent(regexListButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jButton2))
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(jLabel2)
-                                .addGap(651, 651, 651))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(emailsFound, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addGap(0, 0, Short.MAX_VALUE)
-                                        .addComponent(cleanEmailsList)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(saveEmailsButton))
-                                    .addComponent(queueList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jLabel1))
-                                .addGap(18, 18, 18))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(6, 6, 6)
-                                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGap(356, 356, 356)))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel4)
-                                .addGap(262, 262, 262))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                                .addContainerGap())))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(statsLable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(jLabel1)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(jLabel2)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 391, Short.MAX_VALUE)
+                                    .addComponent(cleanEmailsList)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(saveEmailsButton))
+                                .addComponent(queueList, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(resultsList, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                .addGap(24, 24, 24)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                    .addComponent(jLabel4))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel4))
-                .addGap(5, 5, 5)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(emailsFound, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(saveEmailsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(cleanEmailsList))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel2)
+                        .addContainerGap()
+                        .addComponent(jLabel1))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel4)))
+                .addGap(4, 4, 4)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jScrollPane2)
+                        .addGap(20, 20, 20))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(resultsList, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(31, 31, 31)
+                                .addComponent(jLabel2))
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(saveEmailsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(cleanEmailsList))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(queueList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(4, 4, 4))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(12, 12, 12)
-                .addComponent(statsLable))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(362, 362, 362)
-                .addComponent(knownList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jButton1)
+                                .addComponent(regexListButton)
+                                .addComponent(jButton2))
+                            .addComponent(knownList, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(22, 22, 22)
+                        .addComponent(statsLable)
+                        .addGap(6, 6, 6))))
         );
 
         pack();
@@ -367,6 +352,7 @@ public class main extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void startThreadsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startThreadsButtonActionPerformed
+        
         tasktime = new long[Integer.parseInt(threadSpinner.getValue().toString())];
         agentsmodel.setRowCount(0);
         for (int i = 0; i < Integer.parseInt(threadSpinner.getValue().toString()); i++) {
@@ -376,7 +362,7 @@ public class main extends javax.swing.JFrame {
         for (Thread thread : threads) {
             thread.start();
         }
-
+        
         threadSpinner.setEnabled(false);
         suspendButton.setEnabled(true);
         destroyThreadsButton.setEnabled(true);
@@ -407,8 +393,8 @@ public class main extends javax.swing.JFrame {
             try {
                 File file = fc.getSelectedFile();
                 writer = new PrintWriter(file, "UTF-8");
-                for (int i = 0; i <= (emailsFound.getItemCount() - 1); i++) {
-                    writer.println(emailsFound.getItem(i));
+                for (int i = 0; i <= (resultsList.getItemCount() - 1); i++) {
+                    writer.println(resultsList.getItem(i));
                 }
             } catch (FileNotFoundException | UnsupportedEncodingException ex) {
                 Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
@@ -446,8 +432,14 @@ public class main extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void cleanEmailsListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cleanEmailsListActionPerformed
-        emailsFound.removeAll();
+        resultsList.removeAll();
     }//GEN-LAST:event_cleanEmailsListActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        aboutDialog aboutdiag = new aboutDialog(this, true);
+        aboutdiag.setLocationRelativeTo(this);
+        aboutdiag.setVisible(true);
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -488,7 +480,6 @@ public class main extends javax.swing.JFrame {
     private javax.swing.JTable agentsTable;
     private javax.swing.JButton cleanEmailsList;
     private javax.swing.JButton destroyThreadsButton;
-    private java.awt.List emailsFound;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
@@ -496,11 +487,11 @@ public class main extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane2;
     private java.awt.List knownList;
     private java.awt.List queueList;
     private javax.swing.JButton regexListButton;
+    private java.awt.List resultsList;
     private javax.swing.JButton saveEmailsButton;
     private javax.swing.JButton startThreadsButton;
     private javax.swing.JLabel statsLable;
@@ -509,14 +500,14 @@ public class main extends javax.swing.JFrame {
     private javax.swing.JButton unsuspendButton;
     // End of variables declaration//GEN-END:variables
    public String getHTML(String urlToRead) throws MalformedURLException {
-
+        
         URL url;
         final HttpURLConnection conn;
         final BufferedReader rd;
         String line;
         String result = "";
         url = new URL(urlToRead);
-
+        
         try {
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -547,7 +538,7 @@ public class main extends javax.swing.JFrame {
         }
         return result;
     }
-
+    
     public boolean isInList(java.awt.List list, String string) {
         for (int x = 0; x < list.getItemCount(); x++) {
             if (list.getItem(x).equals(string)) {
@@ -557,11 +548,12 @@ public class main extends javax.swing.JFrame {
         return false;
     }
 
+    //TODO: beter regex...
     public void extracturls(String sourceCode, String originalurl) throws MalformedURLException {
         Pattern p = Pattern.compile("href=\"(.*?)\"");
         Matcher m = p.matcher(sourceCode);
         String url;
-
+        
         while (m.find()) {
             if (!m.group(1).contains("#")) {
                 if ((m.group(1).toString().contains(".html")) || (m.group(1).toString().contains(".php"))) {
@@ -587,6 +579,7 @@ public class main extends javax.swing.JFrame {
         }
     }
 
+    //TODO: suspended. stopped and all..
     public void updateStats() {
         if (threads.isEmpty()) {
             statsLable.setText("Statistics: ");
@@ -598,33 +591,35 @@ public class main extends javax.swing.JFrame {
         }
         total = total / tasktime.length;
         total = (TimeUnit.MINUTES.toNanos(1) / total) * tasktime.length;
-        statsLable.setText("Statistics: Agents running: " + threads.size() + ". Queued: " + queueList.countItems() + ". Emails found: " + emailsFound.countItems() + ". Cached: " + knownList.countItems() + ". Already scanned: " + statsscanned + ". Threads Per Minute: " + total + "T/pm.");
+        statsLable.setText("Statistics: Agents running: " + threads.size() + ". Queued: " + queueList.countItems() + ". Emails found: " + resultsList.countItems() + ". Cached: " + knownList.countItems() + ". Already scanned: " + statsscanned + ". Threads Per Minute: " + total + "T/pm.");
     }
 
     //Preform search for any regex in the list if its enabled...
     public void regexssearch(String sourceCode) {
         for (int x = 0; x < regexs.getRowCount(); x++) {
-            if (!Boolean.parseBoolean(regexs.getValueAt(x, 2).toString())) continue;
+            if (!Boolean.parseBoolean(regexs.getValueAt(x, 2).toString())) {
+                continue;
+            }
             Pattern p = Pattern.compile(regexs.getValueAt(x, 1).toString());
             Matcher m = p.matcher(sourceCode);
             String result = null;
             while (m.find()) {
                 result = m.group(1); // this variable should contain the result
-                if (!isInList(emailsFound, result)) {
-                    emailsFound.add(result + " [" + regexs.getValueAt(x, 0).toString() + "]");
+                if (!isInList(resultsList, result)) {
+                    resultsList.add(result);
                 }
             }
         }
     }
-
+    
     class Task extends Thread {
-
+        
         int id;
-
+        
         public Task(int i) {
             this.id = i;
         }
-
+        
         @Override
         public void run() {
             String url;
@@ -676,16 +671,16 @@ public class main extends javax.swing.JFrame {
                                 System.out.println("Socket crash has been handled and recreated!!!");
                             }
                         }
-
+                        
                     }, main.threadTimeoutLimit);
                     source = getHTML(url);
-
+                    
                     try {
                         extracturls(source, url);
                     } catch (MalformedURLException ex) {
                         Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
                     }
-
+                    
                     regexssearch(source);
                     statsscanned++;
                     tasktime[id] = (System.nanoTime()
@@ -693,11 +688,11 @@ public class main extends javax.swing.JFrame {
                     agentsmodel.setValueAt(
                             (TimeUnit.MINUTES.toNanos(1) / tasktime[id]) + "T/pm", id, 2);
                     updateStats();
-
+                    
                     timer.cancel();
-
+                    
                     timer.purge();
-
+                    
                     try {
                         agentsmodel.setValueAt("Sleeping", id, 1);
                         Thread.sleep(main.threadSleepTime);
@@ -707,7 +702,7 @@ public class main extends javax.swing.JFrame {
                 } catch (MalformedURLException ex) {
                     System.err.println("thread id: " + id + " exception when trying to proccess everything. ERROR MESSAGE: " + ex.getMessage().toString());
                 }
-
+                
             }
         }
     }
@@ -739,18 +734,18 @@ public class main extends javax.swing.JFrame {
                 position = mid;
                 hasBroken = true;
                 break;
-
+                
             }
         }
         position = hasBroken ? position : mid;
-
+        
         if (position >= 0) {
             list.add(key, position);
             return;
         }
         position = ~position;
         list.add(key, position);
-
+        
     }
 
     //performs a binary search
@@ -769,11 +764,11 @@ public class main extends javax.swing.JFrame {
         }
         return -1;
     }
-
+    
     public String toMD5(String message) {
         return (MD5.toHexString(MD5.computeMD5(message.toLowerCase().getBytes())));
     }
-
+    
     public static void loadSettings() throws SQLException {
         Connection c = null;
         Statement stmt = null;
@@ -821,7 +816,7 @@ public class main extends javax.swing.JFrame {
         System.out.println("Regexs loaded succesfully.");
         c.close();
     }
-
+    
     public static void saveSettings() throws SQLException {
         Connection c = null;
         Statement stmt = null;
@@ -852,12 +847,12 @@ public class main extends javax.swing.JFrame {
         //save the settings
         c.close();
     }
-
+    
     public void saveQueue() throws SQLException { //DO NOT USE
         Connection c = null;
-
+        
         Statement stmt = null;
-
+        
         try {
             Class.forName("org.sqlite.JDBC");
             c = DriverManager.getConnection("jdbc:sqlite:settings.db");
@@ -867,7 +862,7 @@ public class main extends javax.swing.JFrame {
         }
         String sql = "CREATE TABLE IF NOT EXISTS \"queue\" ( \"address\" TEXT );"; //if tables not exists so we need to create them so we can communicate.
         stmt = c.createStatement();
-
+        
         stmt.executeUpdate(sql);
         sql = "DELETE FROM queue; "; //delete all data from the tables
 
@@ -878,10 +873,10 @@ public class main extends javax.swing.JFrame {
             for (int x = 0; x < queueList.getItemCount(); x++) {
                 sql = "INSERT INTO queue (\"address\") VALUES (\"" + queueList.getItem(x) + "\");";  //delete all data from the tables
                 stmt.executeUpdate(sql);
-
+                
             }
         }
-
+        
         stmt.close();
 
         //save the settings
