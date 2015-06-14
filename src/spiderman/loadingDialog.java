@@ -24,8 +24,10 @@ public class loadingDialog extends javax.swing.JDialog {
     public loadingDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        spiderlogger.println("INFO", "Initialized components.", "loadingDialog");
         Thread thread = new Thread() {
             public void run() {
+                spiderlogger.println("INFO", "Thread runned.", "loadingDialog");
                 try {
                     //main maindiag = new main();
                     sleep(500);
@@ -36,10 +38,12 @@ public class loadingDialog extends javax.swing.JDialog {
                         Logger.getLogger(loadingDialog.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     pBar.setValue(pBar.getValue() + 1);
-                    infoLabel.setText("Loading queue and cache (It might take a while)");
+                    spiderlogger.println("INFO", "Loading queue....", "loadingDialog");
+
 //do: load queue and cache... ask the use?
                     pBar.setValue(pBar.getValue() + 1);
                     infoLabel.setText("Finalizing...");
+                    spiderlogger.println("INFO", "Finalizing....", "loadingDialog");
                     pBar.setValue(pBar.getValue() + 1);
                     sleep(100);
                     loadingDialog.super.setVisible(false);

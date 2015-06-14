@@ -13,29 +13,12 @@ import static java.awt.SystemColor.INFO;
  */
 public class spiderlogger {
 
-    public static void print(spiderlogger.LOGLEVEL level, String Text, String CallerInformation) {
-        System.out.print("[" + LOGLEVEL.logLevel(level) + "] [" + CallerInformation + "]: " + Text);
+    public static void print(String level, String Text, String CallerInformation) {
+        System.out.print("[" + level + "] [" + CallerInformation + "]: " + Text);
     }
 
-    private static class LOGLEVEL {
-
-        public LOGLEVEL() {
-            final int LEVEL_INFO = 1;
-            final int LEVEL_WARN = 2;
-            final int LEVEL_ERROR = 3;
-        }
-
-        public static String logLevel(LOGLEVEL loglevel) {
-            switch (Integer.parseInt("" + loglevel)) {
-                case 1:
-                    return "Information";
-                case 2:
-                    return "Warning";
-                case 3:
-                    return "ERROR";
-                default:
-                    return "Warning";
-            }
-        }
+    public static void println(String level, String Text, String CallerInformation) {
+        print(level, Text + "\n", CallerInformation);
     }
+
 }
