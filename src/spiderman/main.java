@@ -19,6 +19,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +28,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -59,7 +59,6 @@ public class main extends javax.swing.JFrame {
         loading.setVisible(true);
         loading.addWindowListener(new WindowAdapter() {
             public void windowClosed(WindowEvent e) {
-                System.out.println("Window closed");
                 try {
                     main.super.setVisible(true);
                 } catch (Throwable t) {
@@ -116,7 +115,7 @@ public class main extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("SPIDERman - If you can't beat them - Sell them weapons. [BINARY]");
+        setTitle("SPIDERman - If you can't beat them - Sell them weapons.");
 
         knownList.setVisible(false);
 
@@ -298,6 +297,7 @@ public class main extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        statsTable.setEnabled(false);
         statsTable.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(statsTable);
         if (statsTable.getColumnModel().getColumnCount() > 0) {
@@ -553,7 +553,7 @@ public class main extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
    public String getHTML(String urlToRead) throws MalformedURLException {
 
-        URL url;
+        final URL url;
         final HttpURLConnection conn;
         final BufferedReader rd;
         String line;
@@ -574,7 +574,7 @@ public class main extends javax.swing.JFrame {
                         Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     conn.disconnect();
-                    System.out.println("Timeout has been handled.");
+                    spiderlogger.println("WARNNING", "Timeout has been handled. URL: " + url, "getHTML");
                 }
             }, main.threadHTTPTimeout);
             while ((line = rd.readLine()) != null) {
@@ -586,7 +586,7 @@ public class main extends javax.swing.JFrame {
             conn.disconnect();
             System.gc();
         } catch (Exception e) {
-            System.err.println("getHTML exception when trying to read: " + url + ". ERROR MESSAGE: " + e.getMessage().toString());
+            spiderlogger.println("ERROR", Arrays.toString(e.getStackTrace()), "getHTML");
         }
         return result;
     }
@@ -737,7 +737,7 @@ public class main extends javax.swing.JFrame {
                                     Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                                 threads.get(id).start(); //then run it again
-                                System.out.println("Socket crash has been handled and recreated!!!");
+                                spiderlogger.println("WARNNING", "Socket crash handled and recreated.", "Thread-"+id);
                             }
                         }
 
@@ -766,10 +766,10 @@ public class main extends javax.swing.JFrame {
                         agentsmodel.setValueAt("Sleeping", id, 1);
                         Thread.sleep(main.threadSleepTime);
                     } catch (InterruptedException ex) {
-                        System.err.println("thread id: " + id + " exception when trying to proccess " + url + ". ERROR MESSAGE: " + ex.getMessage().toString());
+                                    spiderlogger.println("ERROR", Arrays.toString(ex.getStackTrace()), "Thread"+id);
                     }
                 } catch (MalformedURLException ex) {
-                    System.err.println("thread id: " + id + " exception when trying to proccess everything. ERROR MESSAGE: " + ex.getMessage().toString());
+                                    spiderlogger.println("ERROR", Arrays.toString(ex.getStackTrace()), "Thread"+id);
                 }
 
             }
