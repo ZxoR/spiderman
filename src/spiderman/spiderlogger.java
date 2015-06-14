@@ -5,7 +5,9 @@
  */
 package spiderman;
 
-import static java.awt.SystemColor.INFO;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  *
@@ -14,7 +16,9 @@ import static java.awt.SystemColor.INFO;
 public class spiderlogger {
 
     public static void print(String level, String Text, String CallerInformation) {
-        System.out.print("[" + level + "] [" + CallerInformation + "]: " + Text);
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
+        Date date = new Date();
+        System.out.print("["+dateFormat.format(date)+"] [" + level + "] [" + CallerInformation + "]: " + Text);
     }
 
     public static void println(String level, String Text, String CallerInformation) {
